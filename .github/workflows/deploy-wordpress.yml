@@ -2,7 +2,7 @@ name: Deploy WordPress Code
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup SSH
         run: |
@@ -20,16 +20,24 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p ${{ secrets.SG_PORT }} ${{ secrets.SG_HOST }} >> ~/.ssh/known_hosts
 
+      - name: Test SSH connection
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+              -p ${{ secrets.SG_PORT }} \
+              -i ~/.ssh/id_ed25519 \
+              ${{ secrets.SG_USERNAME }}@${{ secrets.SG_HOST }} \
+              "echo SSH connection successful"
+
       - name: Deploy themes
         run: |
           rsync -az \
-            -e "ssh -p ${{ secrets.SG_PORT }} -i ~/.ssh/id_ed25519" \
+            -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.SG_PORT }} -i ~/.ssh/id_ed25519" \
             ./themes/ \
             ${{ secrets.SG_USERNAME }}@${{ secrets.SG_HOST }}:${{ secrets.SG_THEMES_PATH }}
 
       - name: Deploy plugins
         run: |
           rsync -az \
-            -e "ssh -p ${{ secrets.SG_PORT }} -i ~/.ssh/id_ed25519" \
+            -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.SG_PORT }} -i ~/.ssh/id_ed25519" \
             ./plugins/ \
             ${{ secrets.SG_USERNAME }}@${{ secrets.SG_HOST }}:${{ secrets.SG_PLUGINS_PATH }}
