@@ -49,7 +49,7 @@
 	
 			
 	<body <?php body_class(); ?> id="user-<?php echo get_current_user_role(); ?>">
-		
+		hello world!
 		<!--to fade in page -->
 		<script>document.body.className += ' fade-out';</script>
 
