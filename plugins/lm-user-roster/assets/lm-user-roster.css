@@ -1,0 +1,88 @@
+/******** User Roster CSS ********/
+.lm-user-roster__card {
+	border-bottom: 1px solid #E3E3DD;	
+	margin-bottom: 1.5rem;
+	display: flex;
+	justify-content: start;
+	align-items: start;
+	gap: 1rem;
+	flex-direction: column;
+}
+.lm-user-roster__body {
+	display: flex;
+	justify-content: start;
+	align-items: start;
+	gap: 0;
+	flex-direction: column;	
+}
+.lm-user-roster__body__start h3 {
+	font-weight: bold;
+	color: #221F1F;
+	font-size: 1rem;	
+	margin-bottom: 0;
+}
+.lm-user-roster__body ul {
+	margin: 0;
+	padding: 0;
+	margin-bottom: 0.75rem;	
+}
+.lm-user-roster__body ul li {
+	font-size: 0.85rem;	
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+.lm-user-roster__body a {
+	color: #3255A4;
+	font-weight: 600;
+}	
+.section .lm-user-roster__body ul li:last-child {
+	margin-bottom: 0;	
+}
+.lm-user-roster__card .lm-user-roster__avatar {
+	position: relative;	
+}
+.lm-user-roster__card .lm-user-roster__avatar:before {
+	position: absolute;
+	content: '';
+	top: 0.75rem;
+	right: 0.75rem;
+	bottom: 0.75rem;
+	left: 0.75rem;
+	border: 1px solid #fff;
+	opacity: 0.3;
+}
+
+@media screen and (min-width: 768px) { 
+	.lm-user-roster__card {
+		flex-direction: row;	
+		gap: 2.5rem;
+		padding-bottom: 1.5rem;
+	}	
+	.lm-user-roster__card .lm-user-roster__avatar {
+		width: 20%;	
+	}
+	.lm-user-roster__card .lm-user-roster__body {
+		width: calc(80% - 1.5rem);
+	}	
+	.lm-user-roster__body {
+		flex-direction: row;
+		gap: 2.5rem;	
+	}
+	.lm-user-roster__body > div {
+		width: 50%;	
+	}
+	.lm-user-roster__meta li {
+		display: flex;
+		justify-content: start;
+		align-items: center;
+		gap: 0.5rem;	
+	}
+	.lm-user-roster__meta li span.fa {
+		color: #68859F;	
+		font-size: 0.75rem;
+	}
+	.lm-user-roster__meta strong {
+		text-transform: capitalize;	
+	}
+}

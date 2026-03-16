@@ -1,0 +1,247 @@
+/*******************
+TYPOGRAPHY
+********************/
+
+@font-face {
+	font-family: 'Avenir';
+	src: local('Avenir Light'), local('Avenir-Light'),
+		url('/assets/styles/fonts/Avenir-Light.woff') format('woff'),
+		url('/assets/styles/fonts/Avenir-Light.ttf') format('truetype');
+	font-weight: 300;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Avenir';
+	src: local('Avenir Heavy Oblique'), local('Avenir-HeavyOblique'),
+		url('/assets/styles/fonts/Avenir-HeavyOblique.woff') format('woff'),
+		url('/assets/styles/fonts/Avenir-HeavyOblique.ttf') format('truetype');
+	font-weight: 900;
+	font-style: italic;
+}
+
+@font-face {
+	font-family: 'Avenir';
+	src: local('Avenir Heavy'), local('Avenir-Heavy'),
+		url('/assets/styles/fonts/Avenir-Heavy.woff') format('woff'),
+		url('/assets/styles/fonts/Avenir-Heavy.ttf') format('truetype');
+	font-weight: 900;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Avenir';
+	src: local('Avenir Medium Oblique'), local('Avenir-MediumOblique'),
+		url('/assets/styles/fonts/Avenir-MediumOblique.woff') format('woff'),
+		url('/assets/styles/fonts/Avenir-MediumOblique.ttf') format('truetype');
+	font-weight: 500;
+	font-style: italic;
+}
+
+@font-face {
+	font-family: 'Avenir';
+	src: local('Avenir Light Oblique'), local('Avenir-LightOblique'),
+		url('/assets/styles/fonts/Avenir-LightOblique.woff') format('woff'),
+		url('/assets/styles/fonts/Avenir-LightOblique.ttf') format('truetype');
+	font-weight: 300;
+	font-style: italic;
+}
+
+@font-face {
+	font-family: 'Avenir';
+	src: local('Avenir Medium'), local('Avenir-Medium'),
+		url('/assets/styles/fonts/Avenir-Medium.woff') format('woff'),
+		url('/assets/styles/fonts/Avenir-Medium.ttf') format('truetype');
+	font-weight: 500;
+	font-style: normal;
+}
+
+/* Snell */
+
+@font-face {
+    font-family: 'snell';
+    src: url('/assets/styles/fonts/snellroundhand-black-webfont.woff2') format('woff2'),
+         url('/assets/styles/fonts/snellroundhand-black-webfont.woff') format('woff');
+    font-weight: 700;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'snell';
+    src: url('/assets/styles/fonts/snellroundhand-bold-webfont.woff2') format('woff2'),
+         url('/assets/styles/fonts/snellroundhand-bold-webfont.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'snell';
+    src: url('/assets/styles/fonts/snellroundhand-webfont.woff2') format('woff2'),
+         url('/assets/styles/fonts/snellroundhand-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+/* Libre Baskerville */
+
+@import url('https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700');
+
+body,
+p {
+	font-family: 'Avenir', Arial, sans-serif;
+	font-size: 16px;
+	color:#2E2F33;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: 'Avenir', Arial, sans-serif;
+	color:#41588D;
+}
+
+h1 a, .h1 a, h2 a, .h2 a, h3 a, .h3 a, h4 a, .h4 a, h5 a, .h5 a {
+  text-decoration: none; }
+  
+h1, .h1 {
+	font-size: 3rem;
+	font-weight: 200;
+}
+
+.snell,
+span.snell,
+p.snell,
+h1.snell,
+h2.snell,
+h3.snell,
+h4.snell {
+	font-family: 'snell', 'Avenir', sans-serif;
+	font-size: 140%;
+	line-height: 1.5;
+}
+
+.libre-font,
+p.libre-font,
+span.libre-font {
+	font-family: 'Libre Baskerville', 'Baskerville', sans-serif;
+}
+
+h2, .h2 {
+	font-size: 1.5rem;
+	font-weight: 400;
+}
+
+h3, .h3 {
+	font-size: 1.3rem;
+	font-weight: 400;
+}
+
+h4, .h4 {
+	font-size: 1.3rem;
+}
+
+h5, .h5 {
+	font-size: 1rem;
+}
+
+h6, .h6 {
+	font-size: .9rem;
+}
+
+h1.page-title {
+	font-weight: 200;
+}
+
+span.blue-text {
+	color: #41588D;
+}
+
+span.dark-blue-text {
+	color: #132857;
+}
+
+span.lighter-blue-text {
+	color: #68859F;
+}
+
+span.big-lead {
+	font-size: 2.25rem;
+	line-height: 1.2;
+}
+
+span.big-text {
+	font-size: 150%;
+}
+
+span.big-text.snell {
+	font-size: 200%;
+}
+
+span.medium-text {
+	font-size: 130%;
+}
+
+span.small-text {
+	font-size: 80%;
+}
+
+span.white-text {
+	color: #fff;
+}
+
+span.light-text {
+	font-weight: lighter;
+}
+
+span.pre-header {
+	text-transform: uppercase;
+	letter-spacing: .08rem;
+	font-weight: normal;
+	font-size: .85rem;
+}
+
+h1.h1-pre-header {
+	text-transform: uppercase;
+	letter-spacing: .08rem;
+	font-size: 1rem;
+	margin-bottom: .7rem;
+	line-height: 1;
+	font-weight: normal;
+	font-size: .85rem;
+}
+
+.p-large-margin-bottom {
+	margin-bottom: 3rem;
+}
+
+.p-medium-margin-bottom {
+	margin-bottom: 2rem;
+}
+
+.p-small-margin-bottom {
+	margin-bottom: 1rem;
+}
+
+.p-no-margin-bottom {
+	margin-bottom: 0;
+}
+
+a.button {
+	background-color: #41588D;
+	color: #fff;
+	padding: .75rem 1rem;
+	display: inline-block;
+	text-decoration: none;
+	text-transform: uppercase;
+}
+
+a.button.hollow {
+	background-color: #fff;
+	color: #41588D;
+	padding: .75rem 1rem;
+	border: 1px solid #41588D;
+	display: inline-block;
+	text-decoration: none;
+	text-transform: uppercase;
+}
