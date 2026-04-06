@@ -1,6 +1,5 @@
 (function($) {
   var activeClass = 'lm-gf-button-spinner-active';
-  var hiddenLabelClass = 'lm-gf-button-spinner-hidden-label';
   var wrapClass = 'lm-gf-button-spinner-wrap';
 
   function getSubmitButton($form) {
@@ -25,12 +24,6 @@
 
     $wrap.addClass(activeClass);
     $button.prop('disabled', true);
-
-    if ($button.is('input')) {
-      $button.data('lmOriginalValue', $button.val());
-      $button.val('');
-      $button.addClass(hiddenLabelClass);
-    }
   }
 
   function clearSubmitting(formId) {
@@ -47,14 +40,6 @@
 
       $wrap.removeClass(activeClass);
       $button.prop('disabled', false);
-
-      if ($button.is('input')) {
-        if ($button.data('lmOriginalValue')) {
-          $button.val($button.data('lmOriginalValue'));
-        }
-
-        $button.removeClass(hiddenLabelClass);
-      }
     });
   }
 

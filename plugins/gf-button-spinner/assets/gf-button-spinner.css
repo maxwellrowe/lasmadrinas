@@ -6,7 +6,6 @@
 .gform_wrapper .lm-gf-button-spinner-wrap.lm-gf-button-spinner-active input[type="submit"],
 .gform_wrapper .lm-gf-button-spinner-wrap.lm-gf-button-spinner-active button.gform_button {
   position: relative;
-  color: transparent !important;
   opacity: 0.7;
   pointer-events: none;
   transition: opacity 0.15s ease;
@@ -25,10 +24,6 @@
   border-top-color: #41588D;
   border-radius: 50%;
   animation: lm-gf-button-spinner-rotate 0.7s linear infinite;
-}
-
-.gform_wrapper input[type="submit"].lm-gf-button-spinner-hidden-label {
-  text-indent: -9999px;
 }
 
 @keyframes lm-gf-button-spinner-rotate {
