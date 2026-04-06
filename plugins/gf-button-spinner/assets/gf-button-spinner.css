@@ -7,7 +7,9 @@
 .gform_wrapper .lm-gf-button-spinner-wrap.lm-gf-button-spinner-active button.gform_button {
   position: relative;
   color: transparent !important;
+  opacity: 0.7;
   pointer-events: none;
+  transition: opacity 0.15s ease;
 }
 
 .gform_wrapper .lm-gf-button-spinner-wrap.lm-gf-button-spinner-active::after {

@@ -58,6 +58,10 @@
     });
   }
 
+  $(document).on('click', '.gform_wrapper .gform_footer input[type="submit"], .gform_wrapper .gform_page_footer input[type="submit"], .gform_wrapper button.gform_button', function() {
+    setSubmitting($(this).closest('form'));
+  });
+
   $(document).on('submit', '.gform_wrapper form', function() {
     setSubmitting($(this));
   });
