@@ -1,0 +1,217 @@
+# Changelog
+
+## 1.2.30 | May 27, 2026
+
+- Fixed PHP notices triggered by WordPress 6.9.1 new style dependency validation.
+
+## 1.2.29 | August 13, 2025
+
+- Fixed an issue where the county would not always populate for UK addresses when using Address Autocomplete.
+
+## 1.2.28 | May 14, 2025
+
+- Removed redundant check for Gravity Perks in preparation for Spellbook.
+- Added Spanish translations. Credit: Rafael Soler of rafaelsoler.es
+
+## 1.2.27 | March 13, 2025
+
+- Updated Google Maps API script to use asynchronous loading.
+
+## 1.2.26 | February 19, 2025
+
+- Updated behavior to store entire `place` response from Google in a new `gpaa_place_FIELDID` entry meta key in addition to existing `gpaa_lat` and `gpaa_lnt` meta keys.
+
+## 1.2.25 | October 9, 2024
+
+- Fixed a JavaScript error that could occur during Gravity Flow User Input steps.
+
+## 1.2.24 | September 11, 2024
+
+- Updated autocomplete attribute to use `new-password` to prevent browser autocompletion of other fields.
+
+## 1.2.23 | August 27, 2024
+
+- Fixed issue with browser autocomplete in Chrome.
+- Added [`gpaa_field_autocomplete_value`](https://gravitywiz.com/documentation/gpaa_field_autocomplete_value/) JS filter hook.
+
+## 1.2.22 | July 9, 2024
+
+- Refactored the Map field to use Google Map's Advanced Markers.
+
+## 1.2.21
+
+- Fixed issue with Google Places Autocomplete dropdown styling when used with the Conversational Forms add-on.
+
+## 1.2.20
+
+- Fixed an issue where the Places Autocomplete container was not repositioned when the parent container (typical a modal) was resized.
+
+## 1.2.19
+
+- Improved compatibility with other plugins/scripts loading the Google Places API.
+- Fixed issue where the Places Autocomplete results could be positioned incorrectly on mobile inside GP Nested Forms modals.
+- Refactored how we find the container for the autocomplete results to improve reliability and speed when there are multiple fields using Address Autocomplete.
+
+## 1.2.18
+
+- Fixed issue where Address Autocomplete would sometimes not initialize on subsequent form loads if using GP Reload Form.
+
+## 1.2.17
+
+- Fixed an incompatibility with the Map field and the Orbital theme/theme framework.
+- Fixed issue where the State/Province/Region dropdown would not populate correctly for some addresses in France.
+
+## 1.2.16
+
+- Added references to map controller classes to the `window` object so that snippets can use them.
+
+## 1.2.15
+
+- Fixed an issue with where the autocomplete dropdown would not show in the right position inside Nested Forms that fit inside the entire viewport.
+- Added support for defining the Google API key using a new PHP constant named `GPAA_GOOGLE_API_KEY`.
+
+## 1.2.14
+
+- Fixed issue where Address Autocomplete would sometimes not initialize for forms in modals that have not yet loaded.
+
+## 1.2.13
+
+- Added new [`gpaa_prevent_browser_autocomplete`](https://gravitywiz.com/documentation/gpaa_prevent_browser_autocomplete) JavaScript filter.
+- Fixed issue where browser autocomplete would still be enabled for other inputs in an address field such as "Address Line 2."
+
+## 1.2.12
+
+- Fixed issue where the hidden coordinates input could repopulate with non-JSON and trigger a JavaScript error.
+
+## 1.2.11
+
+- Fixed issue where the map field would not pre-populate if the latitude or longitude were number strings.
+- Fixed issue where only the first coordinates input would be available for Easy Passthrough.
+
+## 1.2.10
+
+- Added support for populating the coordinates hidden input with other Address Autocomplete coordinates inputs using GP Easy Passthrough.
+
+## 1.2.9
+
+- Fixed a potential PHP error caused by Address Autocomplete's PHP autoloader.
+
+## 1.2.8
+
+- Fixed issue where a disabled "Street Address" input would throw an error and prevent Address Autocomplete from working on other Address fields.
+- Added new [`gpaa_use_fixed_positioner`](https://gravitywiz.com/documentation/gpaa_use_fixed_positioner) JavaScript filter hook.
+
+## 1.2.7
+
+- Fixed issue where map marker would not show after "Save and Continue" was invoked more than one time on a form draft.
+
+## 1.2.6
+
+- Updated Cypress test to verify addresses in the UK.
+- Fixed issue where the State/Province/Region would not populate correctly for addresses in the UK.
+
+## 1.2.5
+
+- Fixed issue where the `gpaa_map_initialized` action would sometimes fire more than once for a given field.
+- Fixed issue where Map Field marker was not displaying when editing GPNF nested form entries.
+- Added `gpaa_map_initialized` action hook.
+- Fixed issue where views, such as nested forms, rendered via ajax request would not show Map Fields if present.
+
+## 1.2.4
+
+- Fixed issue where hidden Address Fields would cause an error.
+
+## 1.2.3
+
+- Removed marker from Map Fields until the connected Address Field has been autofilled.
+- Fixed issue where the State/Province/Region would not populate correctly for addresses in New Zealand or the Netherlands.
+- Added `gpaa_marker_set` JavaScript action hook.
+
+## 1.2.2
+
+- Removed top margin from Map field for consistency with default Gravity Forms styles.
+
+## 1.2.1
+
+- Added new [`gpaa_map_options`](https://gravitywiz.com/documentation/gpaa_map_options/) and [`gpaa_marker_options`](https://gravitywiz.com/documentation/gpaa_marker_options/) JavaScript filters.
+
+## 1.2
+
+- Added new Map field to preview the entered location in an Address field.
+
+## 1.1.15
+
+- Fixed issue where Address fields marked as read-only would still show the address autocomplete dropdown if the autocomplete input is focused.
+- Added support for filtering by latitude/longitude. Additionally, the registered meta names for Latitude/Longitude have been updated to be more consistent with other input/meta names.
+
+## 1.1.14
+
+- Fixed issue where browser autocomplete would not be properly disabled for the Google Places Autocomplete input.
+
+## 1.1.13
+
+- Removed usage of deprecated Google Maps `addDomListener()` method in favor of standard `addEventListener()` method.
+
+## 1.1.12
+
+- Improved reliability of autocomplete dropdown positioning.
+
+## 1.1.11
+
+- Improved detection of scroll parent of the autocomplete field to help prevent issue where scrolling the page brings the autocomplete dropdown with it.
+- Added "Update URI" to plugin header to improve security.
+
+## 1.1.10
+
+- Updated usage of `GFCommon::maybe_decode_json()` to use `GFAddOn::maybe_decode_json()` instead to support Gravity Forms versions prior to 2.5.
+
+## 1.1.9
+
+- Improved compatibility with forms that are in modals that can scroll including Nested Forms.
+- Added ability to specify which input (via filters) is used as the autocomplete input rather than always using Address Line 1.
+
+## 1.1.8
+
+- Fixed issue where address coordinates where not saved when navigating paginated forms.
+
+## 1.1.7
+
+- Added support for using Populate Anything on an Address field with Address Autocomplete enabled.
+
+## 1.1.6
+
+- Fixed issue where Québec addresses would not select "Quebec" if using the Canadian address format.
+
+## 1.1.5
+
+- Fixed issue where the latitude and longitude meta was not available for use by feed Add-Ons during submission.
+
+## 1.1.4
+
+- Fixed issue where the Country select would not populate for certain site setups.
+- Fixed issue where encoded HTML entities would be populated into inputs rather than the character.
+
+## 1.1.3
+
+- Improved compatibility with earlier versions of Gravity Forms 2.4.
+
+## 1.1.2
+
+- Updated the API key input to be a password input to prevent API key from being visible while viewing the settings.
+- Fixed issue where the country would not be selected if the user's browser language did not match the website's language.
+
+## 1.1.1
+
+- Fixed issue with the City input not being filled in for city-states such as Singapore.
+- Fixed issue where Address inputs such as City could be filled with "undefined" rather than an empty string if the result does not return a value for that particular input.
+
+## 1.1
+
+- Improved formatting of addresses where the street number follows the street/route.
+- Added new capabilities to grant/deny access to Address Autocomplete settings and to uninstall it.
+- Added support for saving the coordinates of autocompleted addresses in entry meta. This improves compatibility with plugins such as GravityView Maps!
+- Improved handling of populating City inputs for countries including Brazil.
+
+## 1.0
+
+- Initial release!

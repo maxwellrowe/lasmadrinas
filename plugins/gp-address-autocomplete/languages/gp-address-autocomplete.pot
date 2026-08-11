@@ -1,0 +1,101 @@
+# Copyright (C) 2026 Gravity Wiz
+# This file is distributed under the GPL2.
+msgid ""
+msgstr ""
+"Project-Id-Version: GP Address Autocomplete 1.2.30\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/cloned-perk-S67RU07_T2\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-05-27T22:12:25+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.10.0\n"
+"X-Domain: gp-address-autocomplete\n"
+
+#. Plugin Name of the plugin
+#: gp-address-autocomplete.php
+#: class-gp-address-autocomplete.php:515
+msgid "GP Address Autocomplete"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: gp-address-autocomplete.php
+msgid "https://gravitywiz.com/documentation/gravity-forms-address-autocomplete"
+msgstr ""
+
+#. Description of the plugin
+#: gp-address-autocomplete.php
+msgid "Improve user experience and increase form conversion by adding address autocomplete."
+msgstr ""
+
+#. Author of the plugin
+#: gp-address-autocomplete.php
+msgid "Gravity Wiz"
+msgstr ""
+
+#. Author URI of the plugin
+#: gp-address-autocomplete.php
+msgid "https://gravitywiz.com/"
+msgstr ""
+
+#. translators: placeholder is the label of the field with Address Autocomplete enabled.
+#: class-gp-address-autocomplete.php:336
+msgid "%s (Latitude)"
+msgstr ""
+
+#. translators: placeholder is the label of the field with Address Autocomplete enabled.
+#: class-gp-address-autocomplete.php:348
+msgid "%s (Longitude)"
+msgstr ""
+
+#. translators: placeholder is the label of the field with Address Autocomplete enabled.
+#: class-gp-address-autocomplete.php:360
+msgid "%s (Place)"
+msgstr ""
+
+#: class-gp-address-autocomplete.php:516
+msgid "Enable autocompletion of address inputs using the Google Places API."
+msgstr ""
+
+#: class-gp-address-autocomplete.php:521
+msgid "Address Autocomplete"
+msgstr ""
+
+#: class-gp-address-autocomplete.php:522
+msgid "Select the field that should be used to populate the map location."
+msgstr ""
+
+#: class-gp-address-autocomplete.php:572
+msgid "<strong>Google API Key</strong>Enter your Google API key. This key must have access to the Places API and Maps JavaScript API."
+msgstr ""
+
+#: class-gp-address-autocomplete.php:573
+msgid "Google API Key"
+msgstr ""
+
+#: class-gp-address-autocomplete.php:574
+msgid "For autocomplete to function, you must have a Google API key set up in the Google Cloud Platform."
+msgstr ""
+
+#: class-gp-address-autocomplete.php:588
+msgid "<strong>Countries</strong>Select the countries you wish to restrict the autocomplete results to. If no countries are selected, results will not be restricted."
+msgstr ""
+
+#: class-gp-address-autocomplete.php:589
+msgid "Countries"
+msgstr ""
+
+#: class-gp-address-autocomplete.php:590
+msgid "Restrict the results of the address autocomplete to specific countries for Address fields using the \"International\" Address Type. If no countries are selected, results will not be restricted. Autocomplete will bias results based on the location of the user."
+msgstr ""
+
+#: class-gp-address-autocomplete.php:599
+msgid "Google Address Autocomplete"
+msgstr ""
+
+#: includes/class-compat-gpep.php:35
+#: includes/class-compat-gpep.php:96
+msgid "Coordinates"
+msgstr ""

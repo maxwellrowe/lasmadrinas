@@ -1,0 +1,9 @@
+.pac-container-gpaa-position-managed {
+	position: fixed !important;
+}
+
+.gpaa_map_container {
+	position: relative;
+	width: 100%;
+	height: 300px;
+}
