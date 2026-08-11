@@ -344,6 +344,29 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 	}
 
 	/**
+	 * Registers Ball Reservation-specific frontend styles.
+	 *
+	 * @return array
+	 */
+	public function styles() {
+		$style_path    = plugin_dir_path( GF_BALL_RESERVATION_FORM_FILE ) . 'assets/css/gpnf-add-entry.css';
+		$style_version = file_exists( $style_path ) ? (string) filemtime( $style_path ) : $this->_version;
+
+		$styles = array(
+			array(
+				'handle'  => 'gf-ball-reservation-gpnf-add-entry',
+				'src'     => $this->get_base_url() . '/assets/css/gpnf-add-entry.css',
+				'version' => $style_version,
+				'enqueue' => array(
+					array( $this, 'should_enqueue_address_normalization' ),
+				),
+			),
+		);
+
+		return array_merge( parent::styles(), $styles );
+	}
+
+	/**
 	 * Determines whether the current form is the selected Ball Reservation form.
 	 *
 	 * @param array $form The form currently being rendered.

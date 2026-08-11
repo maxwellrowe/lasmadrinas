@@ -1,0 +1,14 @@
+/* Match the site's primary .button styling for Nested Forms' add-entry control. */
+.gform_wrapper .gpnf-add-entry {
+	background-color: #41588D;
+	color: #fff;
+	font-weight: 500;
+	padding-top: 1rem;
+	text-transform: uppercase;
+}
+
+.gform_wrapper .gpnf-add-entry:hover,
+.gform_wrapper .gpnf-add-entry:focus {
+	background-color: #132857;
+	color: #fff;
+}
