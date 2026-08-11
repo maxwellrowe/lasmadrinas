@@ -42,7 +42,7 @@
 	font-weight: 500;
 }
 
-.gform_wrapper.gravity-theme .gform_save_link.button {
+.gform_wrapper.gravity-theme .gform_page .gform_save_link.button {
 	background-color: #f1f1f1;
 	display: inline-flex;
 	gap: 0.5rem;
@@ -52,6 +52,6 @@
 	color: #132857;
 }
 
-.gform_wrapper.gravity-theme .gform_save_link.button:hover {
+.gform_wrapper.gravity-theme .gform_page .gform_save_link.button:hover {
 	background-color: #ccc;
 }
