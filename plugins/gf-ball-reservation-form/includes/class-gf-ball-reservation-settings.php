@@ -99,11 +99,14 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 	 * @return array
 	 */
 	public function scripts() {
+		$script_path    = plugin_dir_path( GF_BALL_RESERVATION_FORM_FILE ) . 'assets/js/address-normalization.js';
+		$script_version = file_exists( $script_path ) ? (string) filemtime( $script_path ) : $this->_version;
+
 		$scripts = array(
 			array(
 				'handle'    => 'gf-ball-reservation-address-normalization',
 				'src'       => $this->get_base_url() . '/assets/js/address-normalization.js',
-				'version'   => $this->_version,
+				'version'   => $script_version,
 				'in_footer' => true,
 				'deps'      => array( 'gform_gravityforms', 'gp-address-autocomplete' ),
 				'enqueue'   => array(
