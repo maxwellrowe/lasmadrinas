@@ -54,15 +54,20 @@
 		return country && country.short_name === 'US';
 	}
 
-	function normalizeRoute( route ) {
-		var tokens = route.trim().split( /\s+/ );
+	function isHouseNumberToken( token ) {
+		return /^\d[\dA-Za-z-]*$/.test( token ) || /^\d+\/\d+$/.test( token );
+	}
+
+	function normalizeAddressLine1( addressLine1 ) {
+		var tokens = addressLine1.trim().split( /\s+/ );
 		var suffixIndex = tokens.length - 1;
-		var firstDirection = normalizedKey( tokens[ 0 ] );
+		var directionIndex = isHouseNumberToken( tokens[ 0 ] ) ? 1 : 0;
+		var firstDirection = normalizedKey( tokens[ directionIndex ] || '' );
 		var lastDirection = normalizedKey( tokens[ suffixIndex ] );
 
-		// Directional abbreviations are only expanded at a route boundary.
+		// Expand a direction only at the beginning of the street name or at its end.
 		if ( directions[ firstDirection ] ) {
-			tokens[ 0 ] = directions[ firstDirection ];
+			tokens[ directionIndex ] = directions[ firstDirection ];
 		}
 
 		if ( directions[ lastDirection ] ) {
@@ -70,7 +75,7 @@
 			suffixIndex--;
 		}
 
-		// A suffix is only expanded at the end of the route (before an optional direction).
+		// A suffix is only expanded at the end (before an optional direction).
 		if ( suffixIndex >= 0 && suffixes[ normalizedKey( tokens[ suffixIndex ] ) ] ) {
 			tokens[ suffixIndex ] = suffixes[ normalizedKey( tokens[ suffixIndex ] ) ];
 		}
@@ -80,22 +85,18 @@
 
 	gform.addFilter( 'gpaa_values', function( values, place ) {
 		var components = place && Array.isArray( place.address_components ) ? place.address_components : [];
-		var streetNumber;
-		var route;
 
 		if ( ! components.length || ! isUnitedStatesPlace( components ) ) {
 			return values;
 		}
 
-		streetNumber = componentByType( components, 'street_number' );
-		route = componentByType( components, 'route' );
-
-		// Do not replace a value when Google did not provide a usable street route.
-		if ( ! route || ! route.long_name ) {
+		// Preserve the value GP Address Autocomplete already derived. The prediction
+		// label and Google's route component are not a reliable replacement for it.
+		if ( ! values.address1 || 'string' !== typeof values.address1 ) {
 			return values;
 		}
 
-		values.address1 = ( streetNumber && streetNumber.long_name ? streetNumber.long_name + ' ' : '' ) + normalizeRoute( route.long_name );
+		values.address1 = normalizeAddressLine1( values.address1 );
 
 		return values;
 	} );
