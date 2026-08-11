@@ -3,8 +3,16 @@
 	background-color: #41588D;
 	color: #fff;
 	font-weight: 500;
-	padding-top: 1rem;
+	padding: 1rem;
 	text-transform: uppercase;
+	transition: all .2s ease-in-out;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.gform_wrapper .gpnf-add-entry:before {
+	content: '+';
 }
 
 .gform_wrapper .gpnf-add-entry:hover,
