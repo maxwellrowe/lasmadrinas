@@ -21,7 +21,7 @@
 	color: #fff;
 }
 
-.gform_page .gform_page_footer {
+.gform_wrapper.gravity-theme .gform_page .gform_page_footer {
 	background-color: #f1f1f1;
 	padding: 1rem;
 	border-radius: 4px;
