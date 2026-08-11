@@ -69,6 +69,7 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		add_action( 'gform_incomplete_submission_post_save', array( $this, 'store_current_users_resume_token' ), 10, 4 );
 		add_action( 'gform_after_submission', array( $this, 'clear_current_users_resume_token' ), 10, 2 );
 		add_filter( 'gform_form_args', array( $this, 'load_current_users_incomplete_submission' ) );
+		add_filter( 'gpnf_save_and_continue_token', array( $this, 'provide_nested_forms_resume_token' ), 10, 2 );
 		add_filter( 'gform_pre_process', array( $this, 'remove_save_and_continue_email_control' ) );
 		add_filter( 'gform_disable_notification', array( $this, 'disable_save_and_continue_email_notification' ), 10, 5 );
 	}
@@ -136,6 +137,32 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		$_GET['gf_token'] = $token;
 
 		return $form_args;
+	}
+
+	/**
+	 * Provides Nested Forms with the authenticated user's stored resume token.
+	 *
+	 * Nested Forms uses this token to repopulate child entries while Gravity
+	 * Forms restores the parent draft. A direct gf_token always takes priority.
+	 *
+	 * @param string|null $resume_token Existing Save & Continue token.
+	 * @param int|bool    $form_id      Parent form ID.
+	 * @return string|null
+	 */
+	public function provide_nested_forms_resume_token( $resume_token, $form_id ) {
+		if ( ! empty( $resume_token ) || ! is_user_logged_in() || absint( $form_id ) !== $this->get_configured_form_id() ) {
+			return $resume_token;
+		}
+
+		$token = get_user_meta( get_current_user_id(), $this->get_resume_token_meta_key(), true );
+
+		if ( $this->is_valid_current_users_resume_token( $token, absint( $form_id ) ) ) {
+			return $token;
+		}
+
+		delete_user_meta( get_current_user_id(), $this->get_resume_token_meta_key() );
+
+		return $resume_token;
 	}
 
 	/**
