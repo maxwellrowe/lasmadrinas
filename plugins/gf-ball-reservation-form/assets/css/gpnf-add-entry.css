@@ -41,3 +41,17 @@
 	padding-top: 0.25rem;
 	font-weight: 500;
 }
+
+.gform_wrapper.gravity-theme .gform_save_link.button {
+	background: #f1f1f1;
+	display: inline-flex;
+	gap: 0.5rem;
+	justify-content: start;
+	align-items: center;
+	transition: all .2s ease-in-out;
+	color: #132857;
+}
+
+.gform_wrapper.gravity-theme .gform_save_link.button:hover {
+	background: #ccc;
+}
