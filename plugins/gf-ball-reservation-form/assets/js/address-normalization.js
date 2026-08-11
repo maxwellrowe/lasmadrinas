@@ -98,6 +98,11 @@
 
 		values.address1 = normalizeAddressLine1( values.address1 );
 
+		// Keep only the five-digit ZIP for standard ZIP+4 values (e.g. 91105-1930).
+		if ( 'string' === typeof values.postcode && /^(\d{5})-\d{4}$/.test( values.postcode ) ) {
+			values.postcode = values.postcode.slice( 0, 5 );
+		}
+
 		return values;
 	} );
 }() );
