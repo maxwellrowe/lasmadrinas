@@ -55,3 +55,16 @@
 .gform_wrapper.gravity-theme .gform_page .gform_save_link.button:hover {
 	background-color: #ccc;
 }
+
+.gform_page .gpnf-row-actions button {
+	padding: 0.5rem;
+	text-decoration: none;
+	background: #f1f1f1;
+	transition: all .2s ease-in-out;
+}
+.gform_page .gpnf-row-actions button:hover {
+	background: #ccc;
+}
+.gform_page .gpnf-row-actions button.delete-button {
+	background: #fdeaea;
+}
