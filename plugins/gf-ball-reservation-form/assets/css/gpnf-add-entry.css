@@ -28,3 +28,16 @@
 	margin-top: 2rem;
 	text-align: right;
 }
+
+.gfield--type-section {
+	margin-top: 1rem;
+}
+
+.gfield--type-section h3 {
+	margin-bottom: 0;
+}
+
+.gfield--type-section .gsection_description {
+	padding-top: 0.25rem;
+	font-weight: 600;
+}
