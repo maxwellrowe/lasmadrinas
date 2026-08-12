@@ -56,15 +56,15 @@
 	background-color: #ccc;
 }
 
-.gpnf-row-actions button {
+.gform_wrapper.gravity-theme .gpnf-row-actions button {
 	padding: 0.5rem;
 	text-decoration: none;
 	background: #f1f1f1;
 	transition: all .2s ease-in-out;
 }
-.gpnf-row-actions button:hover {
+.gform_wrapper.gravity-theme .gpnf-row-actions button:hover {
 	background: #ccc;
 }
-.gpnf-row-actions button.delete-button {
+.gform_wrapper.gravity-theme .gpnf-row-actions button.delete-button {
 	background: #fdeaea;
 }
