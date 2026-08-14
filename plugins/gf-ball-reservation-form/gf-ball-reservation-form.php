@@ -2,7 +2,7 @@
 /**
  * Plugin Name: GF Ball Reservation Form
  * Description: Ball Reservation-specific settings and address normalization for Gravity Forms.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Las Madrinas
  * Text Domain: gf-ball-reservation-form
  * Requires Plugins: gravityforms
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'GF_BALL_RESERVATION_FORM_VERSION', '1.0.0' );
+define( 'GF_BALL_RESERVATION_FORM_VERSION', '1.1.0' );
 define( 'GF_BALL_RESERVATION_FORM_FILE', __FILE__ );
 
 /**

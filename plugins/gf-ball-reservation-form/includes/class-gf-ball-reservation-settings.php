@@ -72,6 +72,221 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		add_filter( 'gpnf_save_and_continue_token', array( $this, 'provide_nested_forms_resume_token' ), 10, 2 );
 		add_filter( 'gform_pre_process', array( $this, 'remove_save_and_continue_email_control' ) );
 		add_filter( 'gform_disable_notification', array( $this, 'disable_save_and_continue_email_notification' ), 10, 5 );
+		add_filter( 'gform_other_choice_value', array( $this, 'set_guest_payer_other_choice_value' ), 10, 2 );
+		add_filter( 'gform_field_content_31', array( $this, 'set_guest_payer_other_choice_placeholder' ), 10, 2 );
+		add_filter( 'gform_replace_merge_tags', array( $this, 'replace_payment_summary_merge_tag' ), 10, 7 );
+		add_shortcode( 'gf_ball_reservation_payment_summary', array( $this, 'payment_summary_shortcode' ) );
+	}
+
+	/**
+	 * Removes the default value from the Other input on Form 31, Field 13.
+	 *
+	 * @param string        $value Default Other-choice input value.
+	 * @param GF_Field|null $field Field being rendered or validated.
+	 * @return string
+	 */
+	public function set_guest_payer_other_choice_value( $value, $field ) {
+		if ( is_object( $field ) && 31 === absint( $field->formId ) && 13 === absint( $field->id ) ) {
+			return '';
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Adds a placeholder to the Other input on Form 31, Field 13.
+	 *
+	 * Gravity Forms' other-choice filter changes its value but does not expose a
+	 * placeholder setting, so this makes the prompt visible without storing it.
+	 *
+	 * @param string   $content Field HTML.
+	 * @param GF_Field $field   Field being rendered.
+	 * @return string
+	 */
+	public function set_guest_payer_other_choice_placeholder( $content, $field ) {
+		if ( ! is_object( $field ) || 13 !== absint( $field->id ) ) {
+			return $content;
+		}
+
+		return preg_replace_callback(
+			'/<input\\b[^>]*\\bname=(["\'])input_13_other\\1[^>]*>/i',
+			function( $matches ) {
+				$input = preg_replace( '/\\svalue=(["\']).*?\\1/i', ' value=""', $matches[0] );
+
+				if ( false === stripos( $input, ' placeholder=' ) ) {
+					$input = preg_replace( '/\\s*\\/?>(?=$)/', ' placeholder="Enter who is paying."$0', $input, 1 );
+				}
+
+				return $input;
+			},
+			$content
+		);
+	}
+
+	/**
+	 * Registers a payment-summary merge tag and makes the shortcode usable in
+	 * Gravity Forms confirmations and notifications.
+	 *
+	 * Use {ball_reservation_payment_summary} (recommended) or
+	 * [gf_ball_reservation_payment_summary] in a Form 30 confirmation or
+	 * notification. The shortcode also supports entry_id when used in content.
+	 *
+	 * @param string     $text       Text containing merge tags.
+	 * @param array|bool $form       Current form.
+	 * @param array|bool $entry      Current entry.
+	 * @param bool       $url_encode Whether URLs are encoded.
+	 * @param bool       $esc_html   Whether HTML is escaped.
+	 * @param bool       $nl2br      Whether newlines are converted.
+	 * @param string     $format     Output format.
+	 * @return string
+	 */
+	public function replace_payment_summary_merge_tag( $text, $form, $entry, $url_encode, $esc_html, $nl2br, $format ) {
+		$merge_tag = '{ball_reservation_payment_summary}';
+		$shortcode = '[gf_ball_reservation_payment_summary]';
+
+		if ( false === strpos( $text, $merge_tag ) && false === strpos( $text, $shortcode ) ) {
+			return $text;
+		}
+
+		if ( ! is_array( $entry ) || 30 !== absint( rgar( $entry, 'form_id' ) ) ) {
+			return str_replace( array( $merge_tag, $shortcode ), '', $text );
+		}
+
+		$summary = $this->get_payment_summary_markup( $entry );
+
+		return str_replace( array( $merge_tag, $shortcode ), $summary, $text );
+	}
+
+	/**
+	 * Outputs a payment summary for an existing Form 30 entry.
+	 *
+	 * Example: [gf_ball_reservation_payment_summary entry_id="123"]
+	 *
+	 * @param array $attributes Shortcode attributes.
+	 * @return string
+	 */
+	public function payment_summary_shortcode( $attributes ) {
+		$attributes = shortcode_atts( array( 'entry_id' => 0 ), $attributes, 'gf_ball_reservation_payment_summary' );
+		$entry_id   = absint( $attributes['entry_id'] );
+
+		if ( ! $entry_id || ! class_exists( 'GFAPI' ) ) {
+			return '';
+		}
+
+		$entry = GFAPI::get_entry( $entry_id );
+
+		return is_wp_error( $entry ) || 30 !== absint( rgar( $entry, 'form_id' ) ) ? '' : $this->get_payment_summary_markup( $entry );
+	}
+
+	/**
+	 * Builds the reservation count and payer list for one parent entry.
+	 *
+	 * @param array $parent_entry Form 30 entry.
+	 * @return string
+	 */
+	private function get_payment_summary_markup( $parent_entry ) {
+		$items = array();
+
+		$this->add_payment_summary_item( $items, rgar( $parent_entry, '81' ), rgar( $parent_entry, '64' ) );
+
+		foreach ( $this->get_child_entries( $parent_entry ) as $child_entry ) {
+			$this->add_payment_summary_item( $items, rgar( $child_entry, '14' ), rgar( $child_entry, '13' ) );
+		}
+
+		if ( empty( $items ) ) {
+			return '';
+		}
+
+		$table_hostess_count = 0;
+		$list_items          = array();
+
+		foreach ( $items as $item ) {
+			if ( 'Table Hostess' === $item['payer'] ) {
+				$table_hostess_count += $item['count'];
+			}
+
+			$list_items[] = sprintf(
+				'<li>%1$s &mdash; %2$s</li>',
+				esc_html( (string) $item['count'] ),
+				esc_html( $item['payer'] )
+			);
+		}
+
+		$markup = '';
+		if ( $table_hostess_count ) {
+			$markup .= sprintf(
+				'<p><strong>%1$s</strong></p>',
+				esc_html( sprintf( __( 'You owe %s', 'gf-ball-reservation-form' ), $this->format_currency( $table_hostess_count * $this->get_reservation_price() ) ) )
+			);
+		}
+
+		return $markup . '<ul>' . implode( '', $list_items ) . '</ul>';
+	}
+
+	/**
+	 * Adds a valid reservation/payer pair to a summary.
+	 *
+	 * @param array  $items Summary items.
+	 * @param mixed  $count Reservation count.
+	 * @param mixed  $payer Payer name.
+	 * @return void
+	 */
+	private function add_payment_summary_item( &$items, $count, $payer ) {
+		$count = absint( $count );
+		$payer = is_scalar( $payer ) ? trim( wp_strip_all_tags( (string) $payer ) ) : '';
+
+		if ( $count && '' !== $payer ) {
+			$items[] = array( 'count' => $count, 'payer' => $payer );
+		}
+	}
+
+	/**
+	 * Gets entries linked to the configured Nested Forms field.
+	 *
+	 * @param array $parent_entry Form 30 entry.
+	 * @return array
+	 */
+	private function get_child_entries( $parent_entry ) {
+		if ( class_exists( 'GPNF_Entry' ) ) {
+			$nested_entry = new GPNF_Entry( $parent_entry );
+			$entries      = $nested_entry->get_child_entries( 59 );
+
+			return is_array( $entries ) ? $entries : array();
+		}
+
+		$entry_ids = array_filter( array_map( 'absint', explode( ',', (string) rgar( $parent_entry, '59' ) ) ) );
+		$entries   = array();
+
+		foreach ( $entry_ids as $entry_id ) {
+			$entry = GFAPI::get_entry( $entry_id );
+			if ( ! is_wp_error( $entry ) && 31 === absint( rgar( $entry, 'form_id' ) ) ) {
+				$entries[] = $entry;
+			}
+		}
+
+		return $entries;
+	}
+
+	/**
+	 * Returns the configured price for one reservation.
+	 *
+	 * @return float
+	 */
+	private function get_reservation_price() {
+		$settings = $this->get_plugin_settings();
+		$price    = is_array( $settings ) && isset( $settings['reservation_price'] ) ? (float) $settings['reservation_price'] : 550;
+
+		return $price >= 0 ? $price : 550;
+	}
+
+	/**
+	 * Formats a value using the site's currency format.
+	 *
+	 * @param float $amount Amount to format.
+	 * @return string
+	 */
+	private function format_currency( $amount ) {
+		return '$' . number_format_i18n( $amount, 2 );
 	}
 
 	/**
@@ -320,6 +535,15 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 						'validation_callback' => array( $this, 'is_valid_form_setting' ),
 						'description'   => esc_html__( 'Select the Gravity Form that should receive Ball Reservation-specific functionality.', 'gf-ball-reservation-form' ),
 					),
+					array(
+						'name'          => 'reservation_price',
+						'label'         => esc_html__( 'Price Per Reservation', 'gf-ball-reservation-form' ),
+						'type'          => 'text',
+						'input_type'    => 'number',
+						'default_value' => '550',
+						'validation_callback' => array( $this, 'is_valid_reservation_price' ),
+						'description'   => esc_html__( 'Used when calculating the Table Hostess amount owed in the payment summary.', 'gf-ball-reservation-form' ),
+					),
 				),
 			),
 		);
@@ -343,6 +567,16 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		$form_id = absint( $value );
 
 		return $form_id > 0 && $this->form_exists( $form_id );
+	}
+
+	/**
+	 * Validates the reservation price before the Add-On Framework saves it.
+	 *
+	 * @param string $value Submitted price.
+	 * @return bool
+	 */
+	public function is_valid_reservation_price( $value ) {
+		return is_scalar( $value ) && is_numeric( $value ) && (float) $value >= 0;
 	}
 
 	/**
