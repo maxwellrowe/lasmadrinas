@@ -42,7 +42,7 @@ function site_scripts() {
     wp_enqueue_style( 'hover-css', get_template_directory_uri() . '/assets/styles/hover-min.css', array(), '', 'all' );
        
     // Register main stylesheet
-    wp_enqueue_style( 'site-css', get_template_directory_uri() . '/assets/styles/style.css', array(), filemtime(get_template_directory() . '/assets/styles'), 'all' );
+    wp_enqueue_style( 'site-css', get_template_directory_uri() . '/assets/styles/style.css', array(), filemtime( get_template_directory() . '/assets/styles/style.css' ), 'all' );
     
     // Register responsive stylesheet
     wp_enqueue_style( 'responsive-css', get_template_directory_uri() . '/assets/styles/responsive.css', array(), '', 'all' );
