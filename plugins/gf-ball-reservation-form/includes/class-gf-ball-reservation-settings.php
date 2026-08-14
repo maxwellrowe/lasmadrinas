@@ -73,14 +73,14 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		add_filter( 'gform_pre_process', array( $this, 'remove_save_and_continue_email_control' ) );
 		add_filter( 'gform_disable_notification', array( $this, 'disable_save_and_continue_email_notification' ), 10, 5 );
 		add_filter( 'gform_other_choice_value', array( $this, 'set_payer_other_choice_value' ), 10, 2 );
-		add_filter( 'gform_field_content_30', array( $this, 'remove_payer_other_choice_control' ), 10, 2 );
-		add_filter( 'gform_field_content_31', array( $this, 'remove_payer_other_choice_control' ), 10, 2 );
+		add_filter( 'gform_field_content_30', array( $this, 'set_payer_other_choice_placeholder' ), 10, 2 );
+		add_filter( 'gform_field_content_31', array( $this, 'set_payer_other_choice_placeholder' ), 10, 2 );
 		add_filter( 'gform_replace_merge_tags', array( $this, 'replace_payment_summary_merge_tag' ), 10, 7 );
 		add_shortcode( 'gf_ball_reservation_payment_summary', array( $this, 'payment_summary_shortcode' ) );
 	}
 
 	/**
-	 * Gives the hidden Other input a value that is saved with the entry.
+	 * Removes the default value from the Other text input.
 	 *
 	 * @param string        $value Default Other-choice input value.
 	 * @param GF_Field|null $field Field being rendered or validated.
@@ -88,23 +88,22 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 	 */
 	public function set_payer_other_choice_value( $value, $field ) {
 		if ( is_object( $field ) && $this->is_payer_field( $field ) ) {
-			return 'Other';
+			return '';
 		}
 
 		return $value;
 	}
 
 	/**
-	 * Removes the visible text control that Gravity Forms appends to Other.
+	 * Adds a placeholder to the text input that Gravity Forms appends to Other.
 	 *
-	 * The radio label remains "Other". The input is converted to hidden rather
-	 * than removed so Gravity Forms saves and validates the selected value.
+	 * The radio label remains "Other" and the entered text is the saved value.
 	 *
 	 * @param string   $content Field HTML.
 	 * @param GF_Field $field   Field being rendered.
 	 * @return string
 	 */
-	public function remove_payer_other_choice_control( $content, $field ) {
+	public function set_payer_other_choice_placeholder( $content, $field ) {
 		if ( ! is_object( $field ) || ! $this->is_payer_field( $field ) ) {
 			return $content;
 		}
@@ -112,9 +111,13 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		return preg_replace_callback(
 			'/<input\\b[^>]*\\bname=(["\'])input_' . absint( $field->id ) . '_other\\1[^>]*>/i',
 			function( $matches ) {
-				$input = preg_replace( '/\\stype=(["\']).*?\\1/i', ' type="hidden"', $matches[0] );
+				$input = preg_replace( '/\\svalue=(["\']).*?\\1/i', ' value=""', $matches[0] );
 
-				return preg_replace( '/\\svalue=(["\']).*?\\1/i', ' value="Other"', $input );
+				if ( false === stripos( $input, ' placeholder=' ) ) {
+					$input = preg_replace( '/\\s*\\/?>(?=$)/', ' placeholder="Enter who is paying."$0', $input, 1 );
+				}
+
+				return $input;
 			},
 			$content
 		);
