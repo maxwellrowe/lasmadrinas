@@ -139,7 +139,7 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 
 	/**
 	/**
-	 * Replaces the payment-summary shortcode in a rendered Form 30 HTML field.
+	 * Populates Form 30's dedicated payment-summary HTML field.
 	 *
 	 * @param string   $content Rendered field HTML.
 	 * @param GF_Field $field   Field being rendered.
@@ -148,7 +148,17 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 	public function render_payment_summary_html_field( $content, $field ) {
 		$shortcode = '[gf_ball_reservation_payment_summary]';
 
-		if ( ! is_object( $field ) || 'html' !== $field->type || false === strpos( $content, $shortcode ) ) {
+		if ( ! is_object( $field ) || 'html' !== $field->type ) {
+			return $content;
+		}
+
+		// Form 30, Field 89 is the summary field on page three. Retain shortcode
+		// support for any additional HTML field that intentionally uses it.
+		if ( 89 === absint( $field->id ) ) {
+			return $this->get_live_payment_summary_container();
+		}
+
+		if ( false === strpos( $content, $shortcode ) ) {
 			return $content;
 		}
 
