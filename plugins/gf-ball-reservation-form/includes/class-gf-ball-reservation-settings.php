@@ -76,9 +76,10 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		add_filter( 'gform_field_content_30', array( $this, 'set_payer_other_choice_placeholder' ), 10, 2 );
 		add_filter( 'gform_field_content_30', array( $this, 'render_payment_summary_html_field' ), 20, 2 );
 		add_filter( 'gform_field_content_31', array( $this, 'set_payer_other_choice_placeholder' ), 10, 2 );
-		add_filter( 'gform_pre_render_30', array( $this, 'render_in_progress_payment_summary' ) );
 		add_filter( 'gform_replace_merge_tags', array( $this, 'replace_payment_summary_merge_tag' ), 10, 7 );
 		add_shortcode( 'gf_ball_reservation_payment_summary', array( $this, 'payment_summary_shortcode' ) );
+		add_action( 'wp_ajax_gf_ball_reservation_payment_summary', array( $this, 'ajax_payment_summary' ) );
+		add_action( 'wp_ajax_nopriv_gf_ball_reservation_payment_summary', array( $this, 'ajax_payment_summary' ) );
 	}
 
 	/**
@@ -137,31 +138,6 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 	}
 
 	/**
-	 * Replaces the payment-summary shortcode in a Form 30 HTML field while the
-	 * form is being completed. This runs when the user advances to the page
-	 * containing the HTML field, before the final parent entry has been saved.
-	 *
-	 * @param array $form Form being rendered.
-	 * @return array
-	 */
-	public function render_in_progress_payment_summary( $form ) {
-		if ( ! is_array( $form ) || empty( $form['fields'] ) ) {
-			return $form;
-		}
-
-		$shortcode = '[gf_ball_reservation_payment_summary]';
-		$summary   = $this->get_payment_summary_markup( $this->get_in_progress_parent_entry() );
-
-		foreach ( $form['fields'] as &$field ) {
-			if ( 'html' === $field->type && false !== strpos( $field->content, $shortcode ) ) {
-				$field->content = str_replace( $shortcode, $summary, $field->content );
-			}
-		}
-		unset( $field );
-
-		return $form;
-	}
-
 	/**
 	 * Replaces the payment-summary shortcode in a rendered Form 30 HTML field.
 	 *
@@ -176,21 +152,49 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 			return $content;
 		}
 
-		return str_replace( $shortcode, $this->get_payment_summary_markup( $this->get_in_progress_parent_entry() ), $content );
+		return str_replace( $shortcode, $this->get_live_payment_summary_container(), $content );
 	}
 
 	/**
-	 * Builds an entry-shaped array from the values submitted between form pages.
+	 * Builds a live-summary container which is populated when page three loads.
 	 *
-	 * @return array
+	 * @return string
 	 */
-	private function get_in_progress_parent_entry() {
-		return array(
-			'form_id' => 30,
-			'81'      => rgpost( 'input_81' ),
-			'64'      => rgpost( 'input_64' ),
-			'59'      => rgpost( 'input_59' ),
+	private function get_live_payment_summary_container() {
+		return sprintf(
+			'<div class="gf-ball-reservation-payment-summary-live" data-ajax-url="%1$s" data-nonce="%2$s"></div>',
+			esc_url( admin_url( 'admin-ajax.php' ) ),
+			esc_attr( wp_create_nonce( 'gf_ball_reservation_payment_summary' ) )
 		);
+	}
+
+	/**
+	 * Returns the in-progress payment summary for the active Nested Forms session.
+	 *
+	 * @return void
+	 */
+	public function ajax_payment_summary() {
+		check_ajax_referer( 'gf_ball_reservation_payment_summary', 'nonce' );
+
+		$child_entry_ids = array_filter( array_map( 'absint', explode( ',', (string) rgpost( 'child_entry_ids' ) ) ) );
+
+		// Only allow guest entries attached to this browser's Nested Forms session.
+		if ( class_exists( 'GPNF_Session' ) ) {
+			$session_entries = ( new GPNF_Session( 30 ) )->get( 'nested_entries' );
+			$allowed_ids     = is_array( $session_entries ) && isset( $session_entries[59] ) ? array_map( 'absint', (array) $session_entries[59] ) : array();
+			$child_entry_ids = array_values( array_intersect( $child_entry_ids, $allowed_ids ) );
+		} else {
+			$child_entry_ids = array();
+		}
+
+		$entry = array(
+			'form_id' => 30,
+			'81'      => rgpost( 'reservation_count' ),
+			'64'      => rgpost( 'payer' ),
+			'59'      => implode( ',', $child_entry_ids ),
+		);
+
+		wp_send_json_success( array( 'html' => $this->get_payment_summary_markup( $entry ) ) );
 	}
 
 	/**
@@ -665,6 +669,16 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 				'version'   => $script_version,
 				'in_footer' => true,
 				'deps'      => array( 'gform_gravityforms', 'gp-address-autocomplete' ),
+				'enqueue'   => array(
+					array( $this, 'should_enqueue_address_normalization' ),
+				),
+			),
+			array(
+				'handle'    => 'gf-ball-reservation-payment-summary',
+				'src'       => $this->get_base_url() . '/assets/js/payment-summary.js',
+				'version'   => $this->_version,
+				'in_footer' => true,
+				'deps'      => array( 'jquery', 'gform_gravityforms' ),
 				'enqueue'   => array(
 					array( $this, 'should_enqueue_address_normalization' ),
 				),
