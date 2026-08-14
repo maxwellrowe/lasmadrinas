@@ -74,6 +74,7 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		add_filter( 'gform_disable_notification', array( $this, 'disable_save_and_continue_email_notification' ), 10, 5 );
 		add_filter( 'gform_other_choice_value', array( $this, 'set_payer_other_choice_value' ), 10, 2 );
 		add_filter( 'gform_field_content_30', array( $this, 'set_payer_other_choice_placeholder' ), 10, 2 );
+		add_filter( 'gform_field_content_30', array( $this, 'render_payment_summary_html_field' ), 20, 2 );
 		add_filter( 'gform_field_content_31', array( $this, 'set_payer_other_choice_placeholder' ), 10, 2 );
 		add_filter( 'gform_pre_render_30', array( $this, 'render_in_progress_payment_summary' ) );
 		add_filter( 'gform_replace_merge_tags', array( $this, 'replace_payment_summary_merge_tag' ), 10, 7 );
@@ -149,13 +150,7 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		}
 
 		$shortcode = '[gf_ball_reservation_payment_summary]';
-		$entry     = array(
-			'form_id' => 30,
-			'81'      => rgpost( 'input_81' ),
-			'64'      => rgpost( 'input_64' ),
-			'59'      => rgpost( 'input_59' ),
-		);
-		$summary   = $this->get_payment_summary_markup( $entry );
+		$summary   = $this->get_payment_summary_markup( $this->get_in_progress_parent_entry() );
 
 		foreach ( $form['fields'] as &$field ) {
 			if ( 'html' === $field->type && false !== strpos( $field->content, $shortcode ) ) {
@@ -165,6 +160,37 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		unset( $field );
 
 		return $form;
+	}
+
+	/**
+	 * Replaces the payment-summary shortcode in a rendered Form 30 HTML field.
+	 *
+	 * @param string   $content Rendered field HTML.
+	 * @param GF_Field $field   Field being rendered.
+	 * @return string
+	 */
+	public function render_payment_summary_html_field( $content, $field ) {
+		$shortcode = '[gf_ball_reservation_payment_summary]';
+
+		if ( ! is_object( $field ) || 'html' !== $field->type || false === strpos( $content, $shortcode ) ) {
+			return $content;
+		}
+
+		return str_replace( $shortcode, $this->get_payment_summary_markup( $this->get_in_progress_parent_entry() ), $content );
+	}
+
+	/**
+	 * Builds an entry-shaped array from the values submitted between form pages.
+	 *
+	 * @return array
+	 */
+	private function get_in_progress_parent_entry() {
+		return array(
+			'form_id' => 30,
+			'81'      => rgpost( 'input_81' ),
+			'64'      => rgpost( 'input_64' ),
+			'59'      => rgpost( 'input_59' ),
+		);
 	}
 
 	/**
@@ -251,18 +277,18 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 
 			$list_items[] = sprintf(
 				'<li>%1$s &mdash; %2$s</li>',
-				esc_html( (string) $item['count'] ),
-				esc_html( $item['payer'] )
+				esc_html( $item['payer'] ),
+				esc_html( (string) $item['count'] )
 			);
 		}
 
-		$markup = '';
-		if ( $table_hostess_count ) {
-			$markup .= sprintf(
-				'<p><strong>%1$s</strong></p>',
-				esc_html( sprintf( __( 'You owe %s', 'gf-ball-reservation-form' ), $this->format_currency( $table_hostess_count * $this->get_reservation_price() ) ) )
-			);
-		}
+		$markup = sprintf(
+			'<p><strong>%1$s</strong> %2$s</p><p><strong>%3$s</strong> %4$s</p>',
+			esc_html__( 'Total Number of Reservations:', 'gf-ball-reservation-form' ),
+			esc_html( (string) $table_hostess_count ),
+			esc_html__( 'Total Amount Owed:', 'gf-ball-reservation-form' ),
+			esc_html( $this->format_currency( $table_hostess_count * $this->get_reservation_price() ) )
+		);
 
 		return $markup . '<ul>' . implode( '', $list_items ) . '</ul>';
 	}
