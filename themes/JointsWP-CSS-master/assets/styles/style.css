@@ -1591,6 +1591,33 @@ footer.footer .menu .active>a {
 	color: #fff;
 }
 
+.footer-right {
+	display: flex;
+	align-items: center;
+	justify-content: end;
+	gap: 2rem;
+}
+
+.footer-right p {
+	margin-bottom: 0;
+}
+
+.footer-right .footer-social-media {
+	display: flex;
+	justify-content: end;
+	align-items: center;
+	gap: 1rem;
+}
+
+.footer-right .footer-social-media a {
+	font-size: 24px;
+	transition: all .2s ease-in-out;
+}
+
+.footer-right .footer-social-media a:hover {
+	opacity: .8;
+}
+
 /*********************
 POSTS & CONTENT STYLES
 *********************/
