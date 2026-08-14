@@ -75,6 +75,7 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		add_filter( 'gform_other_choice_value', array( $this, 'set_payer_other_choice_value' ), 10, 2 );
 		add_filter( 'gform_field_content_30', array( $this, 'set_payer_other_choice_placeholder' ), 10, 2 );
 		add_filter( 'gform_field_content_31', array( $this, 'set_payer_other_choice_placeholder' ), 10, 2 );
+		add_filter( 'gform_pre_render_30', array( $this, 'render_in_progress_payment_summary' ) );
 		add_filter( 'gform_replace_merge_tags', array( $this, 'replace_payment_summary_merge_tag' ), 10, 7 );
 		add_shortcode( 'gf_ball_reservation_payment_summary', array( $this, 'payment_summary_shortcode' ) );
 	}
@@ -132,6 +133,38 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 	private function is_payer_field( $field ) {
 		return ( 31 === absint( $field->formId ) && 13 === absint( $field->id ) )
 			|| ( 30 === absint( $field->formId ) && 64 === absint( $field->id ) );
+	}
+
+	/**
+	 * Replaces the payment-summary shortcode in a Form 30 HTML field while the
+	 * form is being completed. This runs when the user advances to the page
+	 * containing the HTML field, before the final parent entry has been saved.
+	 *
+	 * @param array $form Form being rendered.
+	 * @return array
+	 */
+	public function render_in_progress_payment_summary( $form ) {
+		if ( ! is_array( $form ) || empty( $form['fields'] ) ) {
+			return $form;
+		}
+
+		$shortcode = '[gf_ball_reservation_payment_summary]';
+		$entry     = array(
+			'form_id' => 30,
+			'81'      => rgpost( 'input_81' ),
+			'64'      => rgpost( 'input_64' ),
+			'59'      => rgpost( 'input_59' ),
+		);
+		$summary   = $this->get_payment_summary_markup( $entry );
+
+		foreach ( $form['fields'] as &$field ) {
+			if ( 'html' === $field->type && false !== strpos( $field->content, $shortcode ) ) {
+				$field->content = str_replace( $shortcode, $summary, $field->content );
+			}
+		}
+		unset( $field );
+
+		return $form;
 	}
 
 	/**
@@ -258,7 +291,7 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 	 * @return array
 	 */
 	private function get_child_entries( $parent_entry ) {
-		if ( class_exists( 'GPNF_Entry' ) ) {
+		if ( ! empty( $parent_entry['id'] ) && class_exists( 'GPNF_Entry' ) ) {
 			$nested_entry = new GPNF_Entry( $parent_entry );
 			$entries      = $nested_entry->get_child_entries( 59 );
 
