@@ -206,7 +206,9 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 
 			// Depending on the Nested Forms request type, its session entry list is
 			// not always available. In that case use the field's submitted IDs.
-			if ( ! empty( $allowed_ids ) ) {
+			if ( empty( $child_entry_ids ) && ! empty( $allowed_ids ) ) {
+				$child_entry_ids = array_values( $allowed_ids );
+			} elseif ( ! empty( $allowed_ids ) ) {
 				$child_entry_ids = array_values( array_intersect( $child_entry_ids, $allowed_ids ) );
 			}
 		}
