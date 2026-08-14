@@ -72,55 +72,63 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		add_filter( 'gpnf_save_and_continue_token', array( $this, 'provide_nested_forms_resume_token' ), 10, 2 );
 		add_filter( 'gform_pre_process', array( $this, 'remove_save_and_continue_email_control' ) );
 		add_filter( 'gform_disable_notification', array( $this, 'disable_save_and_continue_email_notification' ), 10, 5 );
-		add_filter( 'gform_other_choice_value', array( $this, 'set_guest_payer_other_choice_value' ), 10, 2 );
-		add_filter( 'gform_field_content_31', array( $this, 'set_guest_payer_other_choice_placeholder' ), 10, 2 );
+		add_filter( 'gform_other_choice_value', array( $this, 'set_payer_other_choice_value' ), 10, 2 );
+		add_filter( 'gform_field_content_30', array( $this, 'remove_payer_other_choice_control' ), 10, 2 );
+		add_filter( 'gform_field_content_31', array( $this, 'remove_payer_other_choice_control' ), 10, 2 );
 		add_filter( 'gform_replace_merge_tags', array( $this, 'replace_payment_summary_merge_tag' ), 10, 7 );
 		add_shortcode( 'gf_ball_reservation_payment_summary', array( $this, 'payment_summary_shortcode' ) );
 	}
 
 	/**
-	 * Removes the default value from the Other input on Form 31, Field 13.
+	 * Gives the hidden Other input a value that is saved with the entry.
 	 *
 	 * @param string        $value Default Other-choice input value.
 	 * @param GF_Field|null $field Field being rendered or validated.
 	 * @return string
 	 */
-	public function set_guest_payer_other_choice_value( $value, $field ) {
-		if ( is_object( $field ) && 31 === absint( $field->formId ) && 13 === absint( $field->id ) ) {
-			return '';
+	public function set_payer_other_choice_value( $value, $field ) {
+		if ( is_object( $field ) && $this->is_payer_field( $field ) ) {
+			return 'Other';
 		}
 
 		return $value;
 	}
 
 	/**
-	 * Adds a placeholder to the Other input on Form 31, Field 13.
+	 * Removes the visible text control that Gravity Forms appends to Other.
 	 *
-	 * Gravity Forms' other-choice filter changes its value but does not expose a
-	 * placeholder setting, so this makes the prompt visible without storing it.
+	 * The radio label remains "Other". The input is converted to hidden rather
+	 * than removed so Gravity Forms saves and validates the selected value.
 	 *
 	 * @param string   $content Field HTML.
 	 * @param GF_Field $field   Field being rendered.
 	 * @return string
 	 */
-	public function set_guest_payer_other_choice_placeholder( $content, $field ) {
-		if ( ! is_object( $field ) || 13 !== absint( $field->id ) ) {
+	public function remove_payer_other_choice_control( $content, $field ) {
+		if ( ! is_object( $field ) || ! $this->is_payer_field( $field ) ) {
 			return $content;
 		}
 
 		return preg_replace_callback(
-			'/<input\\b[^>]*\\bname=(["\'])input_13_other\\1[^>]*>/i',
+			'/<input\\b[^>]*\\bname=(["\'])input_' . absint( $field->id ) . '_other\\1[^>]*>/i',
 			function( $matches ) {
-				$input = preg_replace( '/\\svalue=(["\']).*?\\1/i', ' value=""', $matches[0] );
+				$input = preg_replace( '/\\stype=(["\']).*?\\1/i', ' type="hidden"', $matches[0] );
 
-				if ( false === stripos( $input, ' placeholder=' ) ) {
-					$input = preg_replace( '/\\s*\\/?>(?=$)/', ' placeholder="Enter who is paying."$0', $input, 1 );
-				}
-
-				return $input;
+				return preg_replace( '/\\svalue=(["\']).*?\\1/i', ' value="Other"', $input );
 			},
 			$content
 		);
+	}
+
+	/**
+	 * Determines whether a field is one of the payer radio fields.
+	 *
+	 * @param GF_Field $field Field being checked.
+	 * @return bool
+	 */
+	private function is_payer_field( $field ) {
+		return ( 31 === absint( $field->formId ) && 13 === absint( $field->id ) )
+			|| ( 30 === absint( $field->formId ) && 64 === absint( $field->id ) );
 	}
 
 	/**
