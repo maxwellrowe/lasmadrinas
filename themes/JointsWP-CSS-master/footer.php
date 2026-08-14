@@ -58,7 +58,27 @@
 	    				</div>
 						
 						<div class="small-12 medium-6 large-6 columns">
-							<p class="source-org copyright">&copy; <?php echo date('Y'); ?> <?php bloginfo('name'); ?>, All Rights Reserved.</p>
+							<div class="footer-right">
+								<div class="footer-social-media">
+									<?php
+									$social_media = function_exists( 'get_field' ) ? get_field( 'social_media', 'option' ) : array();
+
+									if ( is_array( $social_media ) ) :
+										foreach ( $social_media as $social_item ) :
+											$icon = isset( $social_item['font_awesome_icon'] ) ? trim( $social_item['font_awesome_icon'] ) : '';
+											$link = isset( $social_item['link'] ) ? $social_item['link'] : '';
+											$link = is_array( $link ) && isset( $link['url'] ) ? $link['url'] : $link;
+
+											if ( ! $icon || ! $link ) {
+												continue;
+											}
+											?>
+											<a href="<?php echo esc_url( $link ); ?>" target="_blank" rel="noopener noreferrer"><span class="<?php echo esc_attr( $icon ); ?>"></span></a>
+										<?php endforeach; ?>
+									<?php endif; ?>
+								</div>
+								<p class="source-org copyright">&copy; <?php echo date('Y'); ?> <?php bloginfo('name'); ?>, All Rights Reserved.</p>
+							</div>
 						</div>
 					
 					</div> <!-- end #inner-footer -->
