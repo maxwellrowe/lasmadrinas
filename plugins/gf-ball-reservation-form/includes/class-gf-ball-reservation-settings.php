@@ -80,7 +80,7 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 	}
 
 	/**
-	 * Removes the default value from the Other text input.
+	 * Keeps the native Other radio label in place.
 	 *
 	 * @param string        $value Default Other-choice input value.
 	 * @param GF_Field|null $field Field being rendered or validated.
@@ -88,7 +88,7 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 	 */
 	public function set_payer_other_choice_value( $value, $field ) {
 		if ( is_object( $field ) && $this->is_payer_field( $field ) ) {
-			return '';
+			return 'Other';
 		}
 
 		return $value;
