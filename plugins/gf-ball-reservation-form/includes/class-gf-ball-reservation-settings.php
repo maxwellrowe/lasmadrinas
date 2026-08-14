@@ -201,10 +201,14 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		// Only allow guest entries attached to this browser's Nested Forms session.
 		if ( class_exists( 'GPNF_Session' ) ) {
 			$session_entries = ( new GPNF_Session( 30 ) )->get( 'nested_entries' );
-			$allowed_ids     = is_array( $session_entries ) && isset( $session_entries[59] ) ? array_map( 'absint', (array) $session_entries[59] ) : array();
-			$child_entry_ids = array_values( array_intersect( $child_entry_ids, $allowed_ids ) );
-		} else {
-			$child_entry_ids = array();
+			$session_ids     = is_array( $session_entries ) && isset( $session_entries[59] ) ? (array) $session_entries[59] : array();
+			$allowed_ids     = array_filter( array_map( 'absint', explode( ',', implode( ',', $session_ids ) ) ) );
+
+			// Depending on the Nested Forms request type, its session entry list is
+			// not always available. In that case use the field's submitted IDs.
+			if ( ! empty( $allowed_ids ) ) {
+				$child_entry_ids = array_values( array_intersect( $child_entry_ids, $allowed_ids ) );
+			}
 		}
 
 		$entry = array(
@@ -292,22 +296,36 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		}
 
 		$table_hostess_count = 0;
+		$total_guest_count   = 0;
+		$payer_totals        = array();
 		$list_items          = array();
 
 		foreach ( $items as $item ) {
+			$total_guest_count += $item['count'];
+
 			if ( 'Table Hostess' === $item['payer'] ) {
 				$table_hostess_count += $item['count'];
 			}
 
+			if ( ! isset( $payer_totals[ $item['payer'] ] ) ) {
+				$payer_totals[ $item['payer'] ] = 0;
+			}
+
+			$payer_totals[ $item['payer'] ] += $item['count'];
+		}
+
+		foreach ( $payer_totals as $payer => $count ) {
 			$list_items[] = sprintf(
 				'<li>%1$s &mdash; %2$s</li>',
-				esc_html( $item['payer'] ),
-				esc_html( (string) $item['count'] )
+				esc_html( $payer ),
+				esc_html( (string) $count )
 			);
 		}
 
 		$markup = sprintf(
-			'<p><strong>%1$s</strong> %2$s</p><p><strong>%3$s</strong> %4$s</p>',
+			'<p><strong>%1$s</strong> %2$s</p><p><strong>%3$s</strong> %4$s</p><p><strong>%5$s</strong> %6$s</p>',
+			esc_html__( 'Total Guests:', 'gf-ball-reservation-form' ),
+			esc_html( (string) $total_guest_count ),
 			esc_html__( 'Total Number of Reservations:', 'gf-ball-reservation-form' ),
 			esc_html( (string) $table_hostess_count ),
 			esc_html__( 'Total Amount Owed:', 'gf-ball-reservation-form' ),
