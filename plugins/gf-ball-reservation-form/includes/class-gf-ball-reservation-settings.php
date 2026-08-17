@@ -80,6 +80,7 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		add_filter( 'gform_validation_30', array( $this, 'validate_reservation_total' ) );
 		add_filter( 'gform_replace_merge_tags', array( $this, 'replace_payment_summary_merge_tag' ), 10, 7 );
 		add_shortcode( 'gf_ball_reservation_payment_summary', array( $this, 'payment_summary_shortcode' ) );
+		add_action( 'wp_footer', array( $this, 'output_live_reservation_total_script' ), 99 );
 		add_action( 'wp_ajax_gf_ball_reservation_payment_summary', array( $this, 'ajax_payment_summary' ) );
 		add_action( 'wp_ajax_nopriv_gf_ball_reservation_payment_summary', array( $this, 'ajax_payment_summary' ) );
 	}
@@ -176,6 +177,10 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 	 * @return string
 	 */
 	public function toggle_reservation_total_error_field( $content, $field ) {
+		if ( is_admin() && ! wp_doing_ajax() ) {
+			return $content;
+		}
+
 		if ( ! is_object( $field ) || 92 !== absint( $field->id ) ) {
 			return $content;
 		}
@@ -243,6 +248,27 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 			'64'      => rgpost( 'input_64' ),
 			'59'      => implode( ',', $child_entry_ids ),
 		);
+	}
+
+	/**
+	 * Outputs a frontend controller for the live total, error field, and final
+	 * submit button. It is deliberately printed in the footer so it is not
+	 * affected by how Gravity Forms renders HTML fields between pages.
+	 *
+	 * @return void
+	 */
+	public function output_live_reservation_total_script() {
+		if ( is_admin() ) {
+			return;
+		}
+
+		$script = sprintf(
+			'(function($){function payer($form){var $selected=$form.find("[name=input_64]:checked");if(!$selected.length){return "";}return $selected.val()==="gf_other_choice"?($form.find("[name=input_64_other]").val()||""):$selected.val();}function refresh(){var $form=$("#gform_30");if(!$form.length){return;}$.post(%1$s,{action:"gf_ball_reservation_payment_summary",nonce:%2$s,reservation_count:$form.find("[name=input_81]").val()||"",payer:payer($form),child_entry_ids:$form.find("[name=input_59]").val()||""}).done(function(response){if(!response||!response.success||!response.data){return;}var valid=Number(response.data.total_reservations)>=10&&Number(response.data.total_reservations)<=12;$form.find(".gf-ball-reservation-total-error-hidden").toggle(!valid);$form.find("input[type=submit],button[type=submit]").prop("disabled",!valid).attr("aria-disabled",!valid?"true":"false");$form.find(".gf-ball-reservation-payment-summary-live").html(response.data.html||"");});}$(document).on("gform_post_render gform_page_loaded",function(event,formId){if(Number(formId)===30){refresh();}});$(refresh);}(jQuery));',
+			wp_json_encode( admin_url( 'admin-ajax.php' ) ),
+			wp_json_encode( wp_create_nonce( 'gf_ball_reservation_payment_summary' ) )
+		);
+
+		echo '<script type="text/javascript">' . $script . '</script>';
 	}
 
 	/**
