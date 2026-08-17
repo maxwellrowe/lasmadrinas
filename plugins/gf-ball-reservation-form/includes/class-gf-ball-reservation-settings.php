@@ -152,9 +152,9 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 			return $content;
 		}
 
-		// Form 30, Field 89 is the summary field on page three. Retain shortcode
+		// Form 30, Field 91 is the summary field on page three. Retain shortcode
 		// support for any additional HTML field that intentionally uses it.
-		if ( 89 === absint( $field->id ) ) {
+		if ( 91 === absint( $field->id ) ) {
 			return $this->get_live_payment_summary_container();
 		}
 
