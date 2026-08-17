@@ -75,7 +75,9 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		add_filter( 'gform_other_choice_value', array( $this, 'set_payer_other_choice_value' ), 10, 2 );
 		add_filter( 'gform_field_content_30', array( $this, 'set_payer_other_choice_placeholder' ), 10, 2 );
 		add_filter( 'gform_field_content_30', array( $this, 'render_payment_summary_html_field' ), 20, 2 );
+		add_filter( 'gform_field_content_30', array( $this, 'toggle_reservation_total_error_field' ), 30, 2 );
 		add_filter( 'gform_field_content_31', array( $this, 'set_payer_other_choice_placeholder' ), 10, 2 );
+		add_filter( 'gform_validation_30', array( $this, 'validate_reservation_total' ) );
 		add_filter( 'gform_replace_merge_tags', array( $this, 'replace_payment_summary_merge_tag' ), 10, 7 );
 		add_shortcode( 'gf_ball_reservation_payment_summary', array( $this, 'payment_summary_shortcode' ) );
 		add_action( 'wp_ajax_gf_ball_reservation_payment_summary', array( $this, 'ajax_payment_summary' ) );
@@ -166,6 +168,84 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 	}
 
 	/**
+	 * Keeps the Form 30 total-reservation error HTML field hidden until the
+	 * final submission fails its reservation-total validation.
+	 *
+	 * @param string   $content Rendered field HTML.
+	 * @param GF_Field $field   Field being rendered.
+	 * @return string
+	 */
+	public function toggle_reservation_total_error_field( $content, $field ) {
+		if ( ! is_object( $field ) || 92 !== absint( $field->id ) ) {
+			return $content;
+		}
+
+		if ( false !== strpos( (string) $field->cssClass, 'gf-ball-reservation-total-error-visible' ) ) {
+			return $content;
+		}
+
+		return '<div class="gf-ball-reservation-total-error-hidden" style="display:none;">' . $content . '</div>';
+	}
+
+	/**
+	 * Blocks final submission unless the combined reservation total is 10–12.
+	 *
+	 * @param array $validation_result Gravity Forms validation result.
+	 * @return array
+	 */
+	public function validate_reservation_total( $validation_result ) {
+		// The target page is zero only for the form's final Submit action.
+		if ( 0 !== absint( rgpost( 'gform_target_page_number_30' ) ) ) {
+			return $validation_result;
+		}
+
+		$form               = $validation_result['form'];
+		$total_reservations = 0;
+
+		foreach ( $this->get_reservation_items( $this->get_in_progress_parent_entry() ) as $item ) {
+			$total_reservations += $item['count'];
+		}
+
+		if ( $total_reservations >= 10 && $total_reservations <= 12 ) {
+			return $validation_result;
+		}
+
+		$validation_result['is_valid'] = false;
+
+		foreach ( $form['fields'] as &$field ) {
+			if ( 92 === absint( $field->id ) ) {
+				$field->cssClass = trim( $field->cssClass . ' gf-ball-reservation-total-error-visible' );
+				break;
+			}
+		}
+		unset( $field );
+
+		$validation_result['form'] = $form;
+
+		return $validation_result;
+	}
+
+	/**
+	 * Builds an entry-shaped array from the values currently in Form 30.
+	 *
+	 * @return array
+	 */
+	private function get_in_progress_parent_entry() {
+		$child_entry_ids = array_filter( array_map( 'absint', explode( ',', (string) rgpost( 'input_59' ) ) ) );
+
+		if ( empty( $child_entry_ids ) ) {
+			$child_entry_ids = $this->get_nested_forms_session_entry_ids();
+		}
+
+		return array(
+			'form_id' => 30,
+			'81'      => rgpost( 'input_81' ),
+			'64'      => rgpost( 'input_64' ),
+			'59'      => implode( ',', $child_entry_ids ),
+		);
+	}
+
+	/**
 	 * Builds a live-summary container which is populated when page three loads.
 	 *
 	 * @return string
@@ -199,18 +279,14 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		$child_entry_ids = array_filter( array_map( 'absint', explode( ',', (string) rgpost( 'child_entry_ids' ) ) ) );
 
 		// Only allow guest entries attached to this browser's Nested Forms session.
-		if ( class_exists( 'GPNF_Session' ) ) {
-			$session_entries = ( new GPNF_Session( 30 ) )->get( 'nested_entries' );
-			$session_ids     = is_array( $session_entries ) && isset( $session_entries[59] ) ? (array) $session_entries[59] : array();
-			$allowed_ids     = array_filter( array_map( 'absint', explode( ',', implode( ',', $session_ids ) ) ) );
+		$allowed_ids = $this->get_nested_forms_session_entry_ids();
 
-			// Depending on the Nested Forms request type, its session entry list is
-			// not always available. In that case use the field's submitted IDs.
-			if ( empty( $child_entry_ids ) && ! empty( $allowed_ids ) ) {
-				$child_entry_ids = array_values( $allowed_ids );
-			} elseif ( ! empty( $allowed_ids ) ) {
-				$child_entry_ids = array_values( array_intersect( $child_entry_ids, $allowed_ids ) );
-			}
+		// Depending on the Nested Forms request type, its session entry list is
+		// not always available. In that case use the field's submitted IDs.
+		if ( empty( $child_entry_ids ) && ! empty( $allowed_ids ) ) {
+			$child_entry_ids = array_values( $allowed_ids );
+		} elseif ( ! empty( $allowed_ids ) ) {
+			$child_entry_ids = array_values( array_intersect( $child_entry_ids, $allowed_ids ) );
 		}
 
 		$entry = array(
@@ -285,13 +361,7 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 	 * @return string
 	 */
 	private function get_payment_summary_markup( $parent_entry ) {
-		$items = array();
-
-		$this->add_payment_summary_item( $items, rgar( $parent_entry, '81' ), rgar( $parent_entry, '64' ) );
-
-		foreach ( $this->get_child_entries( $parent_entry ) as $child_entry ) {
-			$this->add_payment_summary_item( $items, rgar( $child_entry, '14' ), rgar( $child_entry, '13' ) );
-		}
+		$items = $this->get_reservation_items( $parent_entry );
 
 		if ( empty( $items ) ) {
 			return '';
@@ -337,6 +407,24 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 	}
 
 	/**
+	 * Gets all reservation count and payer pairs for a parent entry.
+	 *
+	 * @param array $parent_entry Form 30 entry or in-progress entry data.
+	 * @return array
+	 */
+	private function get_reservation_items( $parent_entry ) {
+		$items = array();
+
+		$this->add_payment_summary_item( $items, rgar( $parent_entry, '81' ), rgar( $parent_entry, '64' ) );
+
+		foreach ( $this->get_child_entries( $parent_entry ) as $child_entry ) {
+			$this->add_payment_summary_item( $items, rgar( $child_entry, '14' ), rgar( $child_entry, '13' ) );
+		}
+
+		return $items;
+	}
+
+	/**
 	 * Adds a valid reservation/payer pair to a summary.
 	 *
 	 * @param array  $items Summary items.
@@ -378,6 +466,22 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		}
 
 		return $entries;
+	}
+
+	/**
+	 * Gets the child-entry IDs retained by the current Nested Forms session.
+	 *
+	 * @return array
+	 */
+	private function get_nested_forms_session_entry_ids() {
+		if ( ! class_exists( 'GPNF_Session' ) ) {
+			return array();
+		}
+
+		$session_entries = ( new GPNF_Session( 30 ) )->get( 'nested_entries' );
+		$session_ids     = is_array( $session_entries ) && isset( $session_entries[59] ) ? (array) $session_entries[59] : array();
+
+		return array_filter( array_map( 'absint', explode( ',', implode( ',', $session_ids ) ) ) );
 	}
 
 	/**
