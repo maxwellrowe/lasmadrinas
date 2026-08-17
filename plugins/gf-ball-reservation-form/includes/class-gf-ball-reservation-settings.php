@@ -254,7 +254,7 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		$ajax_url = wp_json_encode( admin_url( 'admin-ajax.php' ) );
 		$nonce    = wp_json_encode( wp_create_nonce( 'gf_ball_reservation_payment_summary' ) );
 		$script   = sprintf(
-			'(function($){function refresh(){var $form=$("#gform_30"),$summary=$form.find(".gf-ball-reservation-payment-summary-live");if(!$summary.length){return;}var $selected=$form.find("[name=input_64]:checked"),payer=$selected.val()||"";if(payer==="gf_other_choice"){payer=$form.find("[name=input_64_other]").val()||"";}$summary.each(function(){var $container=$(this);$.post(%1$s,{action:"gf_ball_reservation_payment_summary",nonce:%2$s,reservation_count:$form.find("[name=input_81]").val()||"",payer:payer,child_entry_ids:$form.find("[name=input_59]").val()||""}).done(function(response){if(response&&response.success&&response.data&&response.data.html){$container.html(response.data.html);}else{$container.text("Payment summary is not available yet.");}}).fail(function(){$container.text("Payment summary could not be loaded.");});});}$(document).on("gform_post_render gform_page_loaded",function(event,formId){if(Number(formId)===30){refresh();}});refresh();}(jQuery));',
+			'(function($){function setTotalState(total){var valid=Number(total)>=10&&Number(total)<=12,$form=$("#gform_30");$form.find(".gf-ball-reservation-total-error-hidden").toggle(!valid);$form.find("input[type=submit],button[type=submit]").prop("disabled",!valid).attr("aria-disabled",!valid?"true":"false");}function refresh(){var $form=$("#gform_30"),$summary=$form.find(".gf-ball-reservation-payment-summary-live");if(!$summary.length){return;}var $selected=$form.find("[name=input_64]:checked"),payer=$selected.val()||"";if(payer==="gf_other_choice"){payer=$form.find("[name=input_64_other]").val()||"";}$summary.each(function(){var $container=$(this);$.post(%1$s,{action:"gf_ball_reservation_payment_summary",nonce:%2$s,reservation_count:$form.find("[name=input_81]").val()||"",payer:payer,child_entry_ids:$form.find("[name=input_59]").val()||""}).done(function(response){if(response&&response.success&&response.data&&response.data.html){$container.html(response.data.html);setTotalState(response.data.total_reservations);}else{$container.text("Payment summary is not available yet.");}}).fail(function(){$container.text("Payment summary could not be loaded.");});});}$(document).on("gform_post_render gform_page_loaded",function(event,formId){if(Number(formId)===30){refresh();}});refresh();}(jQuery));',
 			$ajax_url,
 			$nonce
 		);
@@ -296,7 +296,17 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 			'59'      => implode( ',', $child_entry_ids ),
 		);
 
-		wp_send_json_success( array( 'html' => $this->get_payment_summary_markup( $entry ) ) );
+		$total_reservations = 0;
+		foreach ( $this->get_reservation_items( $entry ) as $item ) {
+			$total_reservations += $item['count'];
+		}
+
+		wp_send_json_success(
+			array(
+				'html'               => $this->get_payment_summary_markup( $entry ),
+				'total_reservations' => $total_reservations,
+			)
+		);
 	}
 
 	/**

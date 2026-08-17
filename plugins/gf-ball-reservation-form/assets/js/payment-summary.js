@@ -15,6 +15,15 @@
 		return $selected.val();
 	}
 
+	function setTotalState( $form, totalReservations ) {
+		var isValid = Number( totalReservations ) >= 10 && Number( totalReservations ) <= 12;
+
+		$form.find( '.gf-ball-reservation-total-error-hidden' ).toggle( ! isValid );
+		$form.find( 'input[type="submit"], button[type="submit"]' )
+			.prop( 'disabled', ! isValid )
+			.attr( 'aria-disabled', ! isValid ? 'true' : 'false' );
+	}
+
 	function refreshSummary( formId ) {
 		if ( 30 !== Number( formId ) ) {
 			return;
@@ -39,6 +48,7 @@
 			} ).done( function( response ) {
 				if ( response && response.success && response.data ) {
 					$container.html( response.data.html || '' );
+					setTotalState( $form, response.data.total_reservations );
 				}
 			} );
 		} );
