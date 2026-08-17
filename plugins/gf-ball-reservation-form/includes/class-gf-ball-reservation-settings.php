@@ -297,44 +297,43 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 			return '';
 		}
 
-		$table_hostess_count = 0;
-		$total_guest_count   = 0;
-		$payer_totals        = array();
-		$list_items          = array();
+		$total_reservations = 0;
+		$payer_totals       = array(
+			'Table Hostess' => 0,
+			'Other'         => 0,
+			'Las Madrinas'  => 0,
+		);
 
 		foreach ( $items as $item ) {
-			$total_guest_count += $item['count'];
-
-			if ( 'Table Hostess' === $item['payer'] ) {
-				$table_hostess_count += $item['count'];
-			}
-
-			if ( ! isset( $payer_totals[ $item['payer'] ] ) ) {
-				$payer_totals[ $item['payer'] ] = 0;
-			}
-
-			$payer_totals[ $item['payer'] ] += $item['count'];
+			$total_reservations += $item['count'];
+			$payer_category     = isset( $payer_totals[ $item['payer'] ] ) ? $item['payer'] : 'Other';
+			$payer_totals[ $payer_category ] += $item['count'];
 		}
 
+		$lines = array(
+			sprintf(
+				'<strong>%1$s</strong> = %2$s',
+				esc_html__( 'Total Reservations', 'gf-ball-reservation-form' ),
+				esc_html( (string) $total_reservations )
+			),
+		);
+
 		foreach ( $payer_totals as $payer => $count ) {
-			$list_items[] = sprintf(
-				'<li>%1$s &mdash; %2$s</li>',
-				esc_html( $payer ),
-				esc_html( (string) $count )
+			if ( ! $count ) {
+				continue;
+			}
+
+			$lines[] = sprintf(
+				'<strong>%1$s</strong> %2$s = %3$s',
+				esc_html( $payer . ':' ),
+				esc_html( (string) $count ),
+				esc_html( $this->format_currency( $count * $this->get_reservation_price() ) )
 			);
 		}
 
-		$markup = sprintf(
-			'<p><strong>%1$s</strong> %2$s</p><p><strong>%3$s</strong> %4$s</p><p><strong>%5$s</strong> %6$s</p>',
-			esc_html__( 'Total Guests:', 'gf-ball-reservation-form' ),
-			esc_html( (string) $total_guest_count ),
-			esc_html__( 'Total Number of Reservations:', 'gf-ball-reservation-form' ),
-			esc_html( (string) $table_hostess_count ),
-			esc_html__( 'Total Amount Owed:', 'gf-ball-reservation-form' ),
-			esc_html( $this->format_currency( $table_hostess_count * $this->get_reservation_price() ) )
-		);
+		$markup = '<p>' . implode( '<br>', $lines ) . '</p>';
 
-		return $markup . '<ul>' . implode( '', $list_items ) . '</ul>';
+		return $markup;
 	}
 
 	/**
