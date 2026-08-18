@@ -758,14 +758,16 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 	 * @return array
 	 */
 	public function scripts() {
-		$script_path    = plugin_dir_path( GF_BALL_RESERVATION_FORM_FILE ) . 'assets/js/address-normalization.js';
-		$script_version = file_exists( $script_path ) ? (string) filemtime( $script_path ) : $this->_version;
+		$address_script_path    = plugin_dir_path( GF_BALL_RESERVATION_FORM_FILE ) . 'assets/js/address-normalization.js';
+		$address_script_version = file_exists( $address_script_path ) ? (string) filemtime( $address_script_path ) : $this->_version;
+		$summary_script_path    = plugin_dir_path( GF_BALL_RESERVATION_FORM_FILE ) . 'assets/js/payment-summary.js';
+		$summary_script_version = file_exists( $summary_script_path ) ? (string) filemtime( $summary_script_path ) : $this->_version;
 
 		$scripts = array(
 			array(
 				'handle'    => 'gf-ball-reservation-address-normalization',
 				'src'       => $this->get_base_url() . '/assets/js/address-normalization.js',
-				'version'   => $script_version,
+				'version'   => $address_script_version,
 				'in_footer' => true,
 				'deps'      => array( 'gform_gravityforms', 'gp-address-autocomplete' ),
 				'enqueue'   => array(
@@ -775,7 +777,7 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 			array(
 				'handle'    => 'gf-ball-reservation-payment-summary',
 				'src'       => $this->get_base_url() . '/assets/js/payment-summary.js',
-				'version'   => $this->_version,
+				'version'   => $summary_script_version,
 				'in_footer' => true,
 				'deps'      => array( 'jquery', 'gform_gravityforms' ),
 				'enqueue'   => array(
