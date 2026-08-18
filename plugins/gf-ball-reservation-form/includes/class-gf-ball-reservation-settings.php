@@ -75,7 +75,9 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		add_filter( 'gform_other_choice_value', array( $this, 'set_payer_other_choice_value' ), 10, 2 );
 		add_filter( 'gform_field_content_30', array( $this, 'set_payer_other_choice_placeholder' ), 10, 2 );
 		add_filter( 'gform_field_content_30', array( $this, 'render_payment_summary_html_field' ), 20, 2 );
+		add_filter( 'gform_field_content_30', array( $this, 'disable_address_autocomplete' ), 30, 2 );
 		add_filter( 'gform_field_content_31', array( $this, 'set_payer_other_choice_placeholder' ), 10, 2 );
+		add_filter( 'gform_field_content_31', array( $this, 'disable_address_autocomplete' ), 30, 2 );
 		add_filter( 'gform_replace_merge_tags', array( $this, 'replace_payment_summary_merge_tag' ), 10, 7 );
 		add_shortcode( 'gf_ball_reservation_payment_summary', array( $this, 'payment_summary_shortcode' ) );
 		add_action( 'wp_ajax_gf_ball_reservation_payment_summary', array( $this, 'ajax_payment_summary' ) );
@@ -124,6 +126,21 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 			},
 			$content
 		);
+	}
+
+	/**
+	 * Disables browser autocomplete for address fields on Form 30.
+	 *
+	 * @param string   $content Rendered field HTML.
+	 * @param GF_Field $field   Field being rendered.
+	 * @return string
+	 */
+	public function disable_address_autocomplete( $content, $field ) {
+		if ( ! is_object( $field ) || 'address' !== $field->type ) {
+			return $content;
+		}
+
+		return preg_replace( '/autocomplete=(["\']).*?\\1/i', 'autocomplete="off"', $content );
 	}
 
 	/**
