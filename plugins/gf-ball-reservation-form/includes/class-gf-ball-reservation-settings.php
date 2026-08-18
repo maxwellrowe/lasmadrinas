@@ -75,12 +75,9 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		add_filter( 'gform_other_choice_value', array( $this, 'set_payer_other_choice_value' ), 10, 2 );
 		add_filter( 'gform_field_content_30', array( $this, 'set_payer_other_choice_placeholder' ), 10, 2 );
 		add_filter( 'gform_field_content_30', array( $this, 'render_payment_summary_html_field' ), 20, 2 );
-		add_filter( 'gform_field_content_30', array( $this, 'toggle_reservation_total_error_field' ), 30, 2 );
 		add_filter( 'gform_field_content_31', array( $this, 'set_payer_other_choice_placeholder' ), 10, 2 );
-		add_filter( 'gform_validation_30', array( $this, 'validate_reservation_total' ) );
 		add_filter( 'gform_replace_merge_tags', array( $this, 'replace_payment_summary_merge_tag' ), 10, 7 );
 		add_shortcode( 'gf_ball_reservation_payment_summary', array( $this, 'payment_summary_shortcode' ) );
-		add_action( 'wp_footer', array( $this, 'output_live_reservation_total_script' ), 99 );
 		add_action( 'wp_ajax_gf_ball_reservation_payment_summary', array( $this, 'ajax_payment_summary' ) );
 		add_action( 'wp_ajax_nopriv_gf_ball_reservation_payment_summary', array( $this, 'ajax_payment_summary' ) );
 	}
@@ -169,109 +166,6 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 	}
 
 	/**
-	 * Keeps the Form 30 total-reservation error HTML field hidden until the
-	 * final submission fails its reservation-total validation.
-	 *
-	 * @param string   $content Rendered field HTML.
-	 * @param GF_Field $field   Field being rendered.
-	 * @return string
-	 */
-	public function toggle_reservation_total_error_field( $content, $field ) {
-		if ( is_admin() && ! wp_doing_ajax() ) {
-			return $content;
-		}
-
-		if ( ! is_object( $field ) || 92 !== absint( $field->id ) ) {
-			return $content;
-		}
-
-		if ( false !== strpos( (string) $field->cssClass, 'gf-ball-reservation-total-error-visible' ) ) {
-			return $content;
-		}
-
-		return '<div class="gf-ball-reservation-total-error-hidden" style="display:none;">' . $content . '</div>';
-	}
-
-	/**
-	 * Blocks final submission unless the combined reservation total is 10–12.
-	 *
-	 * @param array $validation_result Gravity Forms validation result.
-	 * @return array
-	 */
-	public function validate_reservation_total( $validation_result ) {
-		// The target page is zero only for the form's final Submit action.
-		if ( 0 !== absint( rgpost( 'gform_target_page_number_30' ) ) ) {
-			return $validation_result;
-		}
-
-		$form               = $validation_result['form'];
-		$total_reservations = 0;
-
-		foreach ( $this->get_reservation_items( $this->get_in_progress_parent_entry() ) as $item ) {
-			$total_reservations += $item['count'];
-		}
-
-		if ( $total_reservations >= 10 && $total_reservations <= 12 ) {
-			return $validation_result;
-		}
-
-		$validation_result['is_valid'] = false;
-
-		foreach ( $form['fields'] as &$field ) {
-			if ( 92 === absint( $field->id ) ) {
-				$field->cssClass = trim( $field->cssClass . ' gf-ball-reservation-total-error-visible' );
-				break;
-			}
-		}
-		unset( $field );
-
-		$validation_result['form'] = $form;
-
-		return $validation_result;
-	}
-
-	/**
-	 * Builds an entry-shaped array from the values currently in Form 30.
-	 *
-	 * @return array
-	 */
-	private function get_in_progress_parent_entry() {
-		$child_entry_ids = array_filter( array_map( 'absint', explode( ',', (string) rgpost( 'input_59' ) ) ) );
-
-		if ( empty( $child_entry_ids ) ) {
-			$child_entry_ids = $this->get_nested_forms_session_entry_ids();
-		}
-
-		return array(
-			'form_id' => 30,
-			'81'      => rgpost( 'input_81' ),
-			'64'      => rgpost( 'input_64' ),
-			'59'      => implode( ',', $child_entry_ids ),
-		);
-	}
-
-	/**
-	 * Outputs a frontend controller for the live total, error field, and final
-	 * submit button. It is deliberately printed in the footer so it is not
-	 * affected by how Gravity Forms renders HTML fields between pages.
-	 *
-	 * @return void
-	 */
-	public function output_live_reservation_total_script() {
-		if ( is_admin() ) {
-			return;
-		}
-
-		$script = sprintf(
-			'(function($){function payer($form){var $selected=$form.find("[name=input_64]:checked");if(!$selected.length){return "";}return $selected.val()==="gf_other_choice"?($form.find("[name=input_64_other]").val()||""):$selected.val();}function refresh(){var $form=$("#gform_30");if(!$form.length){return;}$.post(%1$s,{action:"gf_ball_reservation_payment_summary",nonce:%2$s,reservation_count:$form.find("[name=input_81]").val()||"",payer:payer($form),child_entry_ids:$form.find("[name=input_59]").val()||""}).done(function(response){if(!response||!response.success||!response.data){return;}var valid=Number(response.data.total_reservations)>=10&&Number(response.data.total_reservations)<=12;$form.find(".gf-ball-reservation-total-error-hidden").toggle(!valid);$form.find("input[type=submit],button[type=submit]").prop("disabled",!valid).attr("aria-disabled",!valid?"true":"false");$form.find(".gf-ball-reservation-payment-summary-live").html(response.data.html||"");});}$(document).on("gform_post_render gform_page_loaded",function(event,formId){if(Number(formId)===30){refresh();}});$(refresh);}(jQuery));',
-			wp_json_encode( admin_url( 'admin-ajax.php' ) ),
-			wp_json_encode( wp_create_nonce( 'gf_ball_reservation_payment_summary' ) )
-		);
-
-		echo '<script type="text/javascript">' . $script . '</script>';
-	}
-
-	/**
 	 * Builds a live-summary container which is populated when page three loads.
 	 *
 	 * @return string
@@ -280,7 +174,7 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 		$ajax_url = wp_json_encode( admin_url( 'admin-ajax.php' ) );
 		$nonce    = wp_json_encode( wp_create_nonce( 'gf_ball_reservation_payment_summary' ) );
 		$script   = sprintf(
-			'(function($){function setTotalState(total){var valid=Number(total)>=10&&Number(total)<=12,$form=$("#gform_30");$form.find(".gf-ball-reservation-total-error-hidden").toggle(!valid);$form.find("input[type=submit],button[type=submit]").prop("disabled",!valid).attr("aria-disabled",!valid?"true":"false");}function refresh(){var $form=$("#gform_30"),$summary=$form.find(".gf-ball-reservation-payment-summary-live");if(!$summary.length){return;}var $selected=$form.find("[name=input_64]:checked"),payer=$selected.val()||"";if(payer==="gf_other_choice"){payer=$form.find("[name=input_64_other]").val()||"";}$summary.each(function(){var $container=$(this);$.post(%1$s,{action:"gf_ball_reservation_payment_summary",nonce:%2$s,reservation_count:$form.find("[name=input_81]").val()||"",payer:payer,child_entry_ids:$form.find("[name=input_59]").val()||""}).done(function(response){if(response&&response.success&&response.data&&response.data.html){$container.html(response.data.html);setTotalState(response.data.total_reservations);}else{$container.text("Payment summary is not available yet.");}}).fail(function(){$container.text("Payment summary could not be loaded.");});});}$(document).on("gform_post_render gform_page_loaded",function(event,formId){if(Number(formId)===30){refresh();}});refresh();}(jQuery));',
+			'(function($){function refresh(){var $form=$("#gform_30"),$summary=$form.find(".gf-ball-reservation-payment-summary-live");if(!$summary.length){return;}var $selected=$form.find("[name=input_64]:checked"),payer=$selected.val()||"";if(payer==="gf_other_choice"){payer=$form.find("[name=input_64_other]").val()||"";}$summary.each(function(){var $container=$(this);$.post(%1$s,{action:"gf_ball_reservation_payment_summary",nonce:%2$s,reservation_count:$form.find("[name=input_81]").val()||"",payer:payer,child_entry_ids:$form.find("[name=input_59]").val()||""}).done(function(response){if(response&&response.success&&response.data&&response.data.html){$container.html(response.data.html);}else{$container.text("Payment summary is not available yet.");}}).fail(function(){$container.text("Payment summary could not be loaded.");});});}$(document).on("gform_post_render gform_page_loaded",function(event,formId){if(Number(formId)===30){refresh();}});refresh();}(jQuery));',
 			$ajax_url,
 			$nonce
 		);
@@ -322,15 +216,9 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 			'59'      => implode( ',', $child_entry_ids ),
 		);
 
-		$total_reservations = 0;
-		foreach ( $this->get_reservation_items( $entry ) as $item ) {
-			$total_reservations += $item['count'];
-		}
-
 		wp_send_json_success(
 			array(
-				'html'               => $this->get_payment_summary_markup( $entry ),
-				'total_reservations' => $total_reservations,
+				'html' => $this->get_payment_summary_markup( $entry ),
 			)
 		);
 	}
