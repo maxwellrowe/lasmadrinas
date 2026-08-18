@@ -105,4 +105,15 @@
 
 		return values;
 	} );
+
+	// GP Address Autocomplete replaces address-input autocomplete values after
+	// Gravity Forms has rendered them. Override its default "new-password"
+	// value for the Ball Reservation parent and nested guest forms.
+	gform.addFilter( 'gpaa_field_autocomplete_value', function( value, input, inputName, instance, formId ) {
+		if ( 30 === Number( formId ) || 31 === Number( formId ) ) {
+			return 'off';
+		}
+
+		return value;
+	} );
 }() );
