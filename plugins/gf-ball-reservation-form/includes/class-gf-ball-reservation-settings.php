@@ -719,6 +719,41 @@ class GF_Ball_Reservation_Settings extends GFAddOn {
 					),
 				),
 			),
+			array(
+				'title'  => esc_html__( 'LMB API Integration', 'gf-ball-reservation-form' ),
+				'fields' => array(
+					array(
+						'name'          => 'ball_reservation_api_mode',
+						'label'         => esc_html__( 'Integration Mode', 'gf-ball-reservation-form' ),
+						'type'          => 'select',
+						'default_value' => 'test',
+						'choices'       => array(
+							array(
+								'label' => esc_html__( 'Test: display JSON in the confirmation only', 'gf-ball-reservation-form' ),
+								'value' => 'test',
+							),
+							array(
+								'label' => esc_html__( 'Live: send the JSON to the LMB API', 'gf-ball-reservation-form' ),
+								'value' => 'live',
+							),
+						),
+						'description'   => esc_html__( 'Test mode is the default and does not make an API request.', 'gf-ball-reservation-form' ),
+					),
+					array(
+						'name'          => 'ball_reservation_api_endpoint',
+						'label'         => esc_html__( 'API Endpoint', 'gf-ball-reservation-form' ),
+						'type'          => 'text',
+						'default_value' => 'http://lmbapi.simetra.com/Forms/submit-reservation',
+						'description'   => esc_html__( 'Used only in Live mode.', 'gf-ball-reservation-form' ),
+					),
+					array(
+						'name'        => 'ball_reservation_api_key',
+						'label'       => esc_html__( 'API Key', 'gf-ball-reservation-form' ),
+						'type'        => 'text',
+						'description' => esc_html__( 'Sent as the X-API-Key request header only in Live mode. Leave blank until testing is complete.', 'gf-ball-reservation-form' ),
+					),
+				),
+			),
 		);
 	}
 

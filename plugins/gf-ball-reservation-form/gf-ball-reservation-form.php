@@ -27,8 +27,10 @@ function gf_ball_reservation_form_load() {
 
 	GFForms::include_addon_framework();
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-gf-ball-reservation-settings.php';
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-gf-ball-reservation-api.php';
 
 	GFAddOn::register( 'GF_Ball_Reservation_Settings' );
+	GF_Ball_Reservation_API::register();
 }
 add_action( 'gform_loaded', 'gf_ball_reservation_form_load', 5 );
 
